@@ -330,16 +330,18 @@
                         I build and maintain this sandbox in my spare time to help Canadian investors study taxation and leverage strategies. If this tool saved you hours of Excel math, consider buying me a coffee or opening accounts via my referral links below!
                     </p>
                 </div>
-                <div class="flex-shrink-0">
-                    <a href="https://buymeacoffee.com/" target="_blank" id="i18n-btn-donate" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold py-2.5 px-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center">
-                        ☕ <span class="ml-2">Buy Me a Coffee</span>
-                    </a>
-                    <!-- e-Transfer 按钮 -->
-                    <button onclick="document.getElementById('etransfer-modal').classList.remove('hidden')" class="bg-gray-800 hover:bg-gray-900 text-white text-sm font-bold py-2.5 px-6 rounded-xl shadow-md transition-all flex items-center justify-center">
-                       ⚡ Interac e-Transfer
-                    </button>
-                </div>
-            </div> 
+                <!-- 调整后的 Support Bar -->
+<div class="flex flex-col sm:flex-row gap-3">
+    <!-- Buy Me a Coffee (Coming Soon) -->
+    <div class="bg-gray-200 text-gray-500 text-sm font-bold py-2.5 px-6 rounded-xl flex items-center justify-center cursor-not-allowed">
+        ☕ Buy Me a Coffee (Coming Soon)
+    </div>
+    
+    <!-- e-Transfer (Coming Soon) -->
+    <div class="bg-gray-200 text-gray-500 text-sm font-bold py-2.5 px-6 rounded-xl flex items-center justify-center cursor-not-allowed">
+        ⚡ Interac e-Transfer (Coming Soon)
+    </div>
+</div>
             <!-- e-Transfer Modal -->
             <div id="etransfer-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
                 <div class="bg-white p-6 rounded-2xl max-w-sm w-full shadow-2xl">
@@ -348,9 +350,6 @@
                     <div class="bg-gray-100 p-3 rounded-lg text-center mb-4 border border-gray-200">
             <span class="font-mono font-bold text-indigo-700 select-all">your-email@example.com</span>
         </div>
-        
-        <p class="text-[11px] text-gray-400 mb-6">Security Question: "What is this for?"<br>Answer: "sandbox"</p>
-        
         <button onclick="document.getElementById('etransfer-modal').classList.add('hidden')" class="w-full bg-gray-200 hover:bg-gray-300 py-2 rounded-lg text-sm font-bold text-gray-700">
             Close
         </button>
