@@ -890,31 +890,31 @@ function updateChart(labels, nonRegData, tfsaData, marginData) {
                     {
                         label: translations[currentLang].lblTblNonreg,
                         data: nonRegData,
-                        borderColor: '#e2e8f0', // cool gray
-                        backgroundColor: 'rgba(226, 232, 240, 0.1)',
-                        borderWidth: 2,
+                        borderColor: '#ef4444', // 改为醒目的红色
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 3, // 线条加粗
                         hidden: !document.getElementById('chk-nonreg').checked,
-                        tension: 0.1,
+                        tension: 0.3,
                         fill: true
                     },
                     {
                         label: translations[currentLang].lblTblTfsa,
                         data: tfsaData,
-                        borderColor: '#6366f1', // Indigo
-                        backgroundColor: 'rgba(99, 102, 241, 0.05)',
-                        borderWidth: 3,
+                        borderColor: '#22c55e', // 改为鲜艳的绿色
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 3, // 线条加粗
                         hidden: !document.getElementById('chk-tfsa').checked,
-                        tension: 0.1,
+                        tension: 0.3,
                         fill: true
                     },
                     {
                         label: translations[currentLang].lblTblMargin,
                         data: marginData,
-                        borderColor: '#2563eb', // Blue
-                        backgroundColor: 'rgba(37, 99, 235, 0.05)',
-                        borderWidth: 3,
+                        borderColor: '#3b82f6', // 改为强对比蓝色
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3, // 线条加粗
                         hidden: !document.getElementById('chk-margin').checked,
-                        tension: 0.1,
+                        tension: 0.3,
                         fill: true
                     }
                 ]
@@ -922,11 +922,14 @@ function updateChart(labels, nonRegData, tfsaData, marginData) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index', // 悬停显示所有勾选账户数据
+                    intersect: false,
+                },
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     tooltip: {
+                        enabled: true,
                         callbacks: {
                             label: function(context) {
                                 return context.dataset.label + ': $' + formatNumberWithCommas(context.parsed.y);
@@ -936,10 +939,9 @@ function updateChart(labels, nonRegData, tfsaData, marginData) {
                 },
                 scales: {
                     y: {
+                        beginAtZero: true,
                         ticks: {
-                            callback: function(value) {
-                                return '$' + formatNumberWithCommas(value);
-                            }
+                            callback: function(value) { return '$' + formatNumberWithCommas(value); }
                         }
                     }
                 }
@@ -948,11 +950,8 @@ function updateChart(labels, nonRegData, tfsaData, marginData) {
     } else {
         chart.data.labels = labels;
         chart.data.datasets[0].data = nonRegData;
-        chart.data.datasets[0].label = translations[currentLang].lblTblNonreg;
         chart.data.datasets[1].data = tfsaData;
-        chart.data.datasets[1].label = translations[currentLang].lblTblTfsa;
         chart.data.datasets[2].data = marginData;
-        chart.data.datasets[2].label = translations[currentLang].lblTblMargin;
         chart.update();
     }
 }
