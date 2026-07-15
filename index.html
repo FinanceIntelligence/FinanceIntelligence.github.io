@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Canada Compound Interest & Margin Tax-Deductibility Calculator</title>
-    <!-- 引入 Tailwind CSS -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Chart.js 用于结果可视化 -->
+    <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         input[type="range"] {
@@ -26,10 +26,9 @@
 
     <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
         
-        <!-- 头部 Banner 与语言切换器 -->
+        <!-- Header Banner & Language Selector -->
         <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-8 relative">
-            
-            <!-- 语言切换按钮组合 (右上角) -->
+            <!-- Language Buttons -->
             <div class="absolute top-4 right-4 flex space-x-2 text-sm z-10">
                 <button onclick="changeLanguage('en')" id="lang-en" class="px-2.5 py-1 text-xs font-bold rounded border transition-colors border-white bg-white text-blue-800">EN</button>
                 <button onclick="changeLanguage('zh')" id="lang-zh" class="px-2.5 py-1 text-xs font-bold rounded border transition-colors border-blue-400 hover:bg-white hover:text-blue-800">中文</button>
@@ -44,7 +43,7 @@
             </div>
         </div>
 
-        <!-- 🆕 置顶：数据可视化折线图表区 -->
+        <!-- Chart Section -->
         <div class="px-8 pt-8">
             <div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
                 <h3 id="i18n-chart-title" class="text-lg font-bold text-gray-700 mb-4">Wealth Growth Projection over Time</h3>
@@ -54,14 +53,14 @@
             </div>
         </div>
 
-        <!-- 主体计算区域 (左边参数输入，右边实时数字) -->
+        <!-- Main Content Area -->
         <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
             
-            <!-- 左侧：参数输入区 -->
+            <!-- Left Side: Inputs -->
             <div class="space-y-6">
                 <h2 id="i18n-section-params" class="text-xl font-bold text-gray-700 border-b pb-2">Adjust Parameters</h2>
                 
-                <!-- 初始资金 -->
+                <!-- Initial Principal -->
                 <div>
                     <div class="flex justify-between items-center mb-1.5">
                         <label id="i18n-label-principal" class="text-sm font-semibold text-gray-600">Initial Principal</label>
@@ -73,7 +72,7 @@
                     <input type="range" id="param-principal" min="1000" max="100000" step="1000" value="10000" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
-                <!-- 每月定投 -->
+                <!-- Monthly Contribution -->
                 <div>
                     <div class="flex justify-between items-center mb-1.5">
                         <label id="i18n-label-monthly" class="text-sm font-semibold text-gray-600">Monthly Contribution</label>
@@ -85,7 +84,7 @@
                     <input type="range" id="param-monthly" min="0" max="10000" step="100" value="500" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
-                <!-- 预期年化收益率 -->
+                <!-- Expected Annual Return -->
                 <div>
                     <div class="flex justify-between items-center mb-1.5">
                         <label id="i18n-label-return" class="text-sm font-semibold text-gray-600">Expected Annual Return</label>
@@ -97,7 +96,7 @@
                     <input type="range" id="param-return" min="1" max="25" step="0.5" value="8" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
-                <!-- 投资年限 -->
+                <!-- Years to Grow -->
                 <div>
                     <div class="flex justify-between items-center mb-1.5">
                         <label id="i18n-label-years" class="text-sm font-semibold text-gray-600">Years to Grow</label>
@@ -111,7 +110,7 @@
 
                 <h2 id="i18n-section-tax" class="text-xl font-bold text-gray-700 border-b pb-2 pt-4">CRA Leverage & Tax Parameters</h2>
 
-                <!-- 杠杆比例 -->
+                <!-- Leverage Ratio -->
                 <div>
                     <div class="flex justify-between items-center mb-1.5">
                         <div>
@@ -126,7 +125,7 @@
                     <input type="range" id="param-leverage" min="0" max="150" step="10" value="50" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
-                <!-- 券商原始借贷利率 -->
+                <!-- Gross Margin Rate -->
                 <div>
                     <div class="flex justify-between items-center mb-1.5">
                         <label id="i18n-label-gross" class="text-sm font-semibold text-gray-600">Broker Gross Margin Rate</label>
@@ -138,42 +137,82 @@
                     <input type="range" id="param-gross" min="1" max="15" step="0.25" value="6.5" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
-                <!-- 个人边际税率 -->
-                <div>
-                    <div class="flex justify-between items-center mb-1.5">
+                <!-- Tax Mode Switcher (Toggle) -->
+                <div class="bg-gray-100 p-1.5 rounded-lg flex space-x-1 mb-4">
+                    <button type="button" onclick="setTaxMode('auto')" id="btn-tax-auto" class="flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all bg-white text-blue-700 shadow-sm">
+                        ⚡ <span id="i18n-tax-auto-btn">Estimate Tax (By Income)</span>
+                    </button>
+                    <button type="button" onclick="setTaxMode('manual')" id="btn-tax-manual" class="flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all text-gray-500 hover:text-gray-700">
+                        ⚙️ <span id="i18n-tax-manual-btn">Manual Rate</span>
+                    </button>
+                </div>
+
+                <!-- Auto Calculation Block -->
+                <div id="tax-area-auto" class="space-y-4 p-4 bg-blue-50/50 border border-blue-100 rounded-xl">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label id="i18n-label-tax" class="text-sm font-semibold text-gray-600">Marginal Tax Rate</label>
-                            <span id="i18n-note-tax" class="text-xs text-gray-400 block">(typically 30% - 43% in Ontario)</span>
+                            <label id="i18n-tax-prov" class="block text-xs font-semibold text-gray-600 mb-1">Province</label>
+                            <select id="tax-province" onchange="recalculate()" class="w-full bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm font-bold text-gray-700 focus:outline-none">
+                                <option value="ON" selected>Ontario (ON)</option>
+                                <option value="BC">British Columbia (BC)</option>
+                                <option value="QC">Quebec (QC)</option>
+                                <option value="AB">Alberta (AB)</option>
+                                <option value="MB">Manitoba (MB)</option>
+                            </select>
                         </div>
-                        <div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
-                            <input type="number" id="input-tax" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="35">
-                            <span class="text-gray-500 text-xs ml-1">%</span>
+                        <div>
+                            <label id="i18n-tax-income" class="block text-xs font-semibold text-gray-600 mb-1">Annual Taxable Income</label>
+                            <div class="flex items-center bg-white border border-gray-300 rounded-lg px-2 py-1.5">
+                                <span class="text-gray-500 text-xs mr-1">$</span>
+                                <input type="number" id="tax-income-input" oninput="recalculate()" class="w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="100000">
+                            </div>
                         </div>
                     </div>
-                    <input type="range" id="param-tax" min="0" max="54" step="1" value="35" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                    <div class="flex justify-between items-center pt-2 border-t border-blue-100/60 text-xs">
+                        <span id="i18n-calculated-tax-lbl" class="text-gray-500">Estimated Marginal Tax Rate:</span>
+                        <span class="font-extrabold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded text-sm" id="auto-tax-result">43.41%</span>
+                    </div>
                 </div>
+
+                <!-- Manual Calculation Block -->
+                <div id="tax-area-manual" class="hidden space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <div>
+                                <label id="i18n-label-tax" class="text-sm font-semibold text-gray-600">Marginal Tax Rate</label>
+                                <span id="i18n-note-tax" class="text-xs text-gray-400 block">(typically 30% - 43% in Ontario)</span>
+                            </div>
+                            <div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
+                                <input type="number" id="input-tax" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="35">
+                                <span class="text-gray-500 text-xs ml-1">%</span>
+                            </div>
+                        </div>
+                        <input type="range" id="param-tax" min="0" max="54" step="1" value="35" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                    </div>
+                </div>
+
             </div>
 
-            <!-- 右侧：实时计算结果展示区 -->
+            <!-- Right Side: Results -->
             <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col justify-between">
                 <div>
                     <h2 id="i18n-section-results" class="text-xl font-bold text-gray-700 mb-6 border-b pb-2">Projection Results</h2>
                     
-                    <!-- 核心指标 1：无杠杆 -->
+                    <!-- Standard compounding card -->
                     <div class="mb-6">
                         <span id="i18n-res-standard-title" class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Standard Compounding (No Margin)</span>
                         <div class="text-3xl font-bold text-gray-700 mt-1" id="res-standard">$0</div>
                         <p id="i18n-res-standard-note" class="text-xs text-gray-500 mt-1">Wealth accumulated purely through own cash and monthly contributions.</p>
                     </div>
 
-                    <!-- 核心指标 2：杠杆+抵税 -->
+                    <!-- Leveraging card -->
                     <div class="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
                         <span id="i18n-res-leveraged-title" class="text-xs font-bold text-blue-600 uppercase tracking-wider">Leveraged Portfolio Net Value (Debt Subtracted)</span>
                         <div class="text-4xl font-extrabold text-blue-700 mt-1" id="res-leveraged">$0</div>
                         <p id="i18n-res-leveraged-note" class="text-xs text-blue-600 mt-1">Net portfolio value using margin and claiming annual tax deductions.</p>
                     </div>
 
-                    <!-- 核心指标 3：累计省税与实际成本 -->
+                    <!-- Cost summary -->
                     <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 text-sm">
                         <div>
                             <span id="i18n-res-netrate-title" class="text-xs text-gray-400 block">Net Annual Borrowing Cost</span>
@@ -186,7 +225,7 @@
                     </div>
                 </div>
 
-                <!-- 推荐链接 / 商业转化卡片 -->
+                <!-- Affiliate / Promo Block -->
                 <div class="mt-8 pt-4 border-t border-gray-200">
                     <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-xs">
                         <p id="i18n-affiliate-title" class="text-indigo-800 font-semibold mb-1">💡 Optimize Borrowing Costs:</p>
@@ -202,7 +241,7 @@
 
         </div>
 
-        <!-- 底端支持创作者区域 (Support Me Container) -->
+        <!-- Creator Support Container -->
         <div class="bg-gray-100 border-t border-gray-200 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="text-center sm:text-left">
                 <h4 id="i18n-support-title" class="font-bold text-gray-700 text-sm">Support This Project</h4>
@@ -220,9 +259,8 @@
 
     </div>
 
-    <!-- 核心多语言与计算引擎脚本 -->
+    <!-- Core Calculator Engine & I18n -->
     <script>
-        // 1. 语言包定义（更新为 Financial Product Referral Links 且合并 Emoji）
         const translations = {
             en: {
                 title: "Canada Compound Interest & Margin Tax-Deductibility Calculator",
@@ -251,9 +289,13 @@
                 affiliateBody: 'Is your broker charging too much? **Interactive Brokers (IBKR)** offers some of the lowest margin rates in Canada. <a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">Click here to explore IBKR\'s benefits ↗</a>',
                 supportTitle: "Support This Project",
                 supportSubtitle: "If this tool helped you optimize your portfolio, consider supporting my work!",
-                btnDonate: "Buy Me a Coffee", // 移除按钮本身的重复 ☕ 
+                btnDonate: "Buy Me a Coffee",
                 btnReferral: "Financial Product Referral Links",
-                // 图表相关词汇
+                taxAutoBtn: "Estimate Tax (By Income)",
+                taxManualBtn: "Manual Rate",
+                taxProv: "Province / Territory",
+                taxIncome: "Annual Taxable Income",
+                calculatedTaxLbl: "Estimated Marginal Tax Rate:",
                 chartTitle: "Wealth Growth Projection over Time",
                 chartLabelStandard: "Standard Portfolio (No Leverage)",
                 chartLabelLeveraged: "Leveraged Portfolio (Net)",
@@ -288,7 +330,11 @@
                 supportSubtitle: "如果这个工具帮您看清了杠杆套利路径，欢迎给创作者点个赞或给予支持！",
                 btnDonate: "请作者喝杯咖啡",
                 btnReferral: "金融产品推荐链接",
-                // 图表
+                taxAutoBtn: "按收入智能测算税率",
+                taxManualBtn: "手动输入税率",
+                taxProv: "居住省份",
+                taxIncome: "年应纳税收入 (Taxable Income)",
+                calculatedTaxLbl: "估算出的边际税率 (Marginal Tax Rate):",
                 chartTitle: "资产复利增长趋势预测",
                 chartLabelStandard: "普通定投（无杠杆）",
                 chartLabelLeveraged: "杠杆套利（扣除债务后净值）",
@@ -323,7 +369,11 @@
                 supportSubtitle: "Si cet outil vous a aidé à optimiser votre portefeuille, soutenez mon travail!",
                 btnDonate: "M'offrir un café",
                 btnReferral: "Liens de parrainage de produits financiers",
-                // 图表
+                taxAutoBtn: "Estimer l'impôt (par revenu)",
+                taxManualBtn: "Taux manuel",
+                taxProv: "Province / Territoire",
+                taxIncome: "Revenu imposable annuel",
+                calculatedTaxLbl: "Taux marginal d'imposition estimé :",
                 chartTitle: "Projection de la croissance du patrimoine au fil du temps",
                 chartLabelStandard: "Portefeuille Standard (Sans levier)",
                 chartLabelLeveraged: "Portefeuille avec levier (Net)",
@@ -332,9 +382,78 @@
         };
 
         let currentLang = 'en';
-        let growthChartInstance = null; // 用于存储 Chart 实例
+        let growthChartInstance = null; 
+        let currentTaxMode = 'auto'; 
 
-        // 获取 DOM
+        // 2026 Combined Marginal Tax Brackets (Federal + Provincial)
+        const TAX_BRACKETS_2026 = {
+            ON: [
+                { limit: 12000, rate: 0.0 },
+                { limit: 49000, rate: 0.2005 },
+                { limit: 55000, rate: 0.2415 },
+                { limit: 90000, rate: 0.2965 },
+                { limit: 98000, rate: 0.3148 },
+                { limit: 106000, rate: 0.3389 },
+                { limit: 111000, rate: 0.3791 },
+                { limit: 154000, rate: 0.4341 },
+                { limit: 166000, rate: 0.4641 },
+                { limit: 177000, rate: 0.4797 },
+                { limit: 220000, rate: 0.4835 },
+                { limit: 246000, rate: 0.5197 },
+                { limit: Infinity, rate: 0.5353 }
+            ],
+            BC: [
+                { limit: 13000, rate: 0.0 },
+                { limit: 47000, rate: 0.2006 },
+                { limit: 55000, rate: 0.2270 },
+                { limit: 95000, rate: 0.2820 },
+                { limit: 109000, rate: 0.3100 },
+                { limit: 111000, rate: 0.3279 },
+                { limit: 133000, rate: 0.3829 },
+                { limit: 162000, rate: 0.4070 },
+                { limit: 177000, rate: 0.4580 },
+                { limit: 222000, rate: 0.4618 },
+                { limit: 240000, rate: 0.4980 },
+                { limit: 252000, rate: 0.5250 },
+                { limit: Infinity, rate: 0.5350 }
+            ],
+            QC: [
+                { limit: 17000, rate: 0.0 },
+                { limit: 51000, rate: 0.2653 },
+                { limit: 55000, rate: 0.3153 },
+                { limit: 103000, rate: 0.3612 },
+                { limit: 111000, rate: 0.4112 },
+                { limit: 126000, rate: 0.4571 },
+                { limit: 177000, rate: 0.4997 },
+                { limit: 225000, rate: 0.5033 },
+                { limit: 246000, rate: 0.5400 },
+                { limit: Infinity, rate: 0.5875 }
+            ],
+            AB: [
+                { limit: 21000, rate: 0.0 },
+                { limit: 55000, rate: 0.2500 },
+                { limit: 111000, rate: 0.3050 },
+                { limit: 142000, rate: 0.3600 },
+                { limit: 170000, rate: 0.3800 },
+                { limit: 177000, rate: 0.4100 },
+                { limit: 227000, rate: 0.4130 },
+                { limit: 246000, rate: 0.4430 },
+                { limit: 341000, rate: 0.4700 },
+                { limit: Infinity, rate: 0.4800 }
+            ],
+            MB: [
+                { limit: 15000, rate: 0.0 },
+                { limit: 47000, rate: 0.2580 },
+                { limit: 55000, rate: 0.2775 },
+                { limit: 100000, rate: 0.3325 },
+                { limit: 111000, rate: 0.3790 },
+                { limit: 177000, rate: 0.4340 },
+                { limit: 220000, rate: 0.4640 },
+                { limit: 246000, rate: 0.4940 },
+                { limit: Infinity, rate: 0.5040 }
+            ]
+        };
+
         const elPrincipal = document.getElementById('param-principal');
         const elMonthly = document.getElementById('param-monthly');
         const elReturn = document.getElementById('param-return');
@@ -357,7 +476,37 @@
         const resNetRate = document.getElementById('res-net-rate');
         const resTaxSaved = document.getElementById('res-tax-saved');
 
-        // 初始化 Chart.js
+        function setTaxMode(mode) {
+            currentTaxMode = mode;
+            const btnAuto = document.getElementById('btn-tax-auto');
+            const btnManual = document.getElementById('btn-tax-manual');
+            const areaAuto = document.getElementById('tax-area-auto');
+            const areaManual = document.getElementById('tax-area-manual');
+
+            if (mode === 'auto') {
+                btnAuto.className = "flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all bg-white text-blue-700 shadow-sm";
+                btnManual.className = "flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all text-gray-500 hover:text-gray-700";
+                areaAuto.classList.remove('hidden');
+                areaManual.classList.add('hidden');
+            } else {
+                btnManual.className = "flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all bg-white text-blue-700 shadow-sm";
+                btnAuto.className = "flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all text-gray-500 hover:text-gray-700";
+                areaManual.classList.remove('hidden');
+                areaAuto.classList.add('hidden');
+            }
+            recalculate();
+        }
+
+        function getMarginalTaxRate(province, income) {
+            const brackets = TAX_BRACKETS_2026[province] || TAX_BRACKETS_2026['ON'];
+            for (let i = 0; i < brackets.length; i++) {
+                if (income <= brackets[i].limit) {
+                    return brackets[i].rate;
+                }
+            }
+            return 0.50;
+        }
+
         function initChart() {
             const ctx = document.getElementById('growthChart').getContext('2d');
             growthChartInstance = new Chart(ctx, {
@@ -368,7 +517,7 @@
                         {
                             label: '',
                             data: [],
-                            borderColor: '#9ca3af', // 灰
+                            borderColor: '#9ca3af',
                             backgroundColor: 'rgba(156, 163, 175, 0.1)',
                             borderWidth: 2,
                             tension: 0.1,
@@ -378,7 +527,7 @@
                         {
                             label: '',
                             data: [],
-                            borderColor: '#2563eb', // 蓝
+                            borderColor: '#2563eb',
                             backgroundColor: 'rgba(37, 99, 235, 0.1)',
                             borderWidth: 3,
                             tension: 0.1,
@@ -393,10 +542,7 @@
                     plugins: {
                         legend: {
                             position: 'top',
-                            labels: {
-                                boxWidth: 12,
-                                font: { size: 11 }
-                            }
+                            labels: { boxWidth: 12, font: { size: 11 } }
                         },
                         tooltip: {
                             mode: 'index',
@@ -414,16 +560,11 @@
                         }
                     },
                     scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { font: { size: 10 } }
-                        },
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
                         y: {
                             ticks: {
                                 font: { size: 10 },
-                                callback: function(value) {
-                                    return '$' + (value / 1000).toLocaleString() + 'k';
-                                }
+                                callback: function(value) { return '$' + (value / 1000).toLocaleString() + 'k'; }
                             }
                         }
                     }
@@ -431,7 +572,6 @@
             });
         }
 
-        // 语言切换函数
         function changeLanguage(lang) {
             currentLang = lang;
             
@@ -459,17 +599,18 @@
             document.getElementById('i18n-affiliate-title').innerText = translations[lang].affiliateTitle;
             document.getElementById('i18n-affiliate-body').innerHTML = translations[lang].affiliateBody;
 
-            // 底部支持区域
             document.getElementById('i18n-support-title').innerText = translations[lang].supportTitle;
             document.getElementById('i18n-support-subtitle').innerText = translations[lang].supportSubtitle;
-            
-            // 按钮逻辑：左侧保留单个 ☕ 标签，右侧保留 🎁 标签
             document.getElementById('i18n-btn-donate').innerHTML = `☕ <span class="ml-1.5">${translations[lang].btnDonate}</span>`;
             document.getElementById('i18n-btn-referral').innerHTML = `🎁 <span class="ml-1.5">${translations[lang].btnReferral}</span>`;
 
-            // 图表标题
-            document.getElementById('i18n-chart-title').innerText = translations[lang].chartTitle;
+            document.getElementById('i18n-tax-auto-btn').innerText = translations[lang].taxAutoBtn;
+            document.getElementById('i18n-tax-manual-btn').innerText = translations[lang].taxManualBtn;
+            document.getElementById('i18n-tax-prov').innerText = translations[lang].taxProv;
+            document.getElementById('i18n-tax-income').innerText = translations[lang].taxIncome;
+            document.getElementById('i18n-calculated-tax-lbl').innerText = translations[lang].calculatedTaxLbl;
 
+            document.getElementById('i18n-chart-title').innerText = translations[lang].chartTitle;
             lblYearsUnit.innerText = translations[lang].yearsUnit;
 
             ['en', 'zh', 'fr'].forEach(l => {
@@ -484,7 +625,6 @@
             recalculate();
         }
 
-        // 双向联动绑定逻辑
         function bindInputs(slider, inputField, min, max) {
             slider.addEventListener('input', () => {
                 inputField.value = slider.value;
@@ -522,7 +662,6 @@
             return '$' + Math.round(num).toLocaleString('en-US');
         }
 
-        // 核心数学与图表更新逻辑
         function recalculate() {
             const principal = parseFloat(inputPrincipal.value) || 0;
             const monthly = parseFloat(inputMonthly.value) || 0;
@@ -530,19 +669,26 @@
             const years = parseInt(inputYears.value) || 1;
             const leverageRatio = (parseFloat(inputLeverage.value) || 0) / 100;
             const grossRate = (parseFloat(inputGross.value) || 0) / 100;
-            const taxRate = (parseFloat(inputTax.value) || 0) / 100;
+
+            let taxRate = 0;
+            if (currentTaxMode === 'auto') {
+                const prov = document.getElementById('tax-province').value;
+                const income = parseFloat(document.getElementById('tax-income-input').value) || 0;
+                taxRate = getMarginalTaxRate(prov, income);
+                document.getElementById('auto-tax-result').innerText = (taxRate * 100).toFixed(2) + '%';
+            } else {
+                taxRate = (parseFloat(inputTax.value) || 0) / 100;
+            }
 
             const netBorrowRate = grossRate * (1 - taxRate);
             resNetRate.innerText = (netBorrowRate * 100).toFixed(2) + '%';
 
             const monthlyR = Math.pow(1 + r, 1 / 12) - 1;
 
-            // 存储每年数据的数组
             let labels = [];
             let standardHistory = [];
             let leveragedHistory = [];
 
-            // 初始值 (第 0 年)
             labels.push(translations[currentLang].chartXAxis + " 0" + (currentLang === 'zh' ? '年' : ''));
             standardHistory.push(principal);
             leveragedHistory.push(principal);
@@ -551,15 +697,12 @@
             let leveragedOwnCash = principal; 
             let cumulativeTaxSaved = 0;
 
-            // 按年复利演进并记录历史点
             for (let y = 1; y <= years; y++) {
-                // 计算无杠杆
                 for (let m = 0; m < 12; m++) {
                     standardValue = (standardValue + monthly) * (1 + monthlyR);
                 }
                 standardHistory.push(standardValue);
 
-                // 计算杠杆
                 const debtThisYear = leveragedOwnCash * leverageRatio;
                 let totalInvestedAsset = leveragedOwnCash + debtThisYear;
 
@@ -577,19 +720,14 @@
 
                 leveragedHistory.push(leveragedOwnCash);
 
-                // 填充 X 轴标签
-                const xLabel = currentLang === 'zh' 
-                    ? `第 ${y} 年` 
-                    : `${translations[currentLang].chartXAxis} ${y}`;
+                const xLabel = currentLang === 'zh' ? `第 ${y} 年` : `${translations[currentLang].chartXAxis} ${y}`;
                 labels.push(xLabel);
             }
 
-            // 更新结果卡片数值
             resStandard.innerText = formatMoney(standardValue);
             resLeveraged.innerText = formatMoney(leveragedOwnCash);
             resTaxSaved.innerText = formatMoney(cumulativeTaxSaved);
 
-            // 实时更新图表数据
             if (growthChartInstance) {
                 growthChartInstance.data.labels = labels;
                 growthChartInstance.data.datasets[0].label = translations[currentLang].chartLabelStandard;
@@ -600,7 +738,6 @@
             }
         }
 
-        // 首次加载初始化
         initChart();
         changeLanguage('en');
     </script>
