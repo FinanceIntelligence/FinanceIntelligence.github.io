@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
 
 // ==========================================
 // 1. 完整合并的多语言字典 (Localization)
@@ -91,7 +92,6 @@ const localization = {
 // 2. 简易省份边际税率估算逻辑（加国常用四大省份）
 // ==========================================
 const estimateMarginalTaxRate = (province: string, income: number): number => {
-  // 简化的 2026 边际税率估算区间 (联邦 + 省合并边际税率阶梯)
   if (province === 'ON') { // 安省
     if (income <= 50000) return 0.2005;
     if (income <= 100000) return 0.3148;
@@ -120,23 +120,26 @@ const estimateMarginalTaxRate = (province: string, income: number): number => {
   return 0.35; // 默认平均税率
 };
 
-export const CanadaLeverageSandbox: React.FC = () => {
+// ==========================================
+// 3. 沙盒应用主页面组件 (App Component)
+// ==========================================
+export const App: React.FC = () => {
   // 1. 语言控制状态
   const [locale, setLocale] = useState<'en' | 'zh' | 'fr'>('zh');
   const t = localization[locale];
 
-  // 2. 核心数值状态 (支持键盘直接打字输入，防止受滑块限制干扰)
+  // 2. 核心数值状态 (支持键盘直接打字输入)
   const [principal, setPrincipal] = useState<number>(50000);
   const [totalInvestment, setTotalInvestment] = useState<number>(100000);
   
-  // 3. 融资利率管理状态 (你的独立打字缓冲输入设计)
+  // 3. 融资利率管理状态 (打字缓冲输入设计)
   const [marginRate, setMarginRate] = useState<number>(3.95);
   const [inputValue, setInputValue] = useState<string>("3.95");
 
   // 4. 税务状态
   const [province, setProvince] = useState<string>('ON'); // 默认安省
   const [income, setIncome] = useState<number>(95000);
-  const [customTaxRate, setCustomTaxRate] = useState<string>(""); // 允许手动重写税率
+  const [customTaxRate, setCustomTaxRate] = useState<string>(""); // 手动覆盖税率
 
   // 处理融资年利率输入
   const handleRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,7 +171,7 @@ export const CanadaLeverageSandbox: React.FC = () => {
     ? parseFloat(customTaxRate) / 100 
     : estimateMarginalTaxRate(province, income);
 
-  // 利息抵税效应 (加拿大 CRA 规定：借钱投资以产生收入为目的，利息可全额抵减应纳税收入)
+  // 利息抵税效应
   const taxSaved = annualInterest * taxRatePercent;
   const netInterest = Math.max(0, annualInterest - taxSaved);
   const afterTaxMarginRate = loanAmount > 0 ? (netInterest / loanAmount) * 100 : 0;
@@ -180,263 +183,277 @@ export const CanadaLeverageSandbox: React.FC = () => {
   const marginReturn = (totalInvestment * returnRate) - netInterest; // 杠杆回报扣除税后利息成本
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 md:p-6 space-y-6 bg-slate-50 rounded-2xl">
-      
-      {/* 顶部控制栏：多语言切换 */}
-      <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🇨🇦</span>
-          <span className="font-bold text-gray-800 text-sm md:text-base">{t.title}</span>
-        </div>
-        <div className="flex gap-1.5">
-          {(['en', 'zh', 'fr'] as const).map((lang) => (
-            <button
-              key={lang}
-              onClick={() => setLocale(lang)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
-                locale === lang 
-                  ? 'bg-blue-600 text-white shadow-sm' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {lang.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-4xl mx-auto space-y-6">
         
-        {/* 左半区：参数调整区 (12列中的5列) */}
-        <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-5">
-            
-            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b pb-2">
-              ⚙️ {locale === 'zh' ? '杠杆沙盒输入' : 'Sandbox Inputs'}
-            </h3>
+        {/* 顶部控制栏：多语言切换 */}
+        <div className="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🇨🇦</span>
+            <span className="font-bold text-gray-800 text-base md:text-lg">{t.title}</span>
+          </div>
+          <div className="flex gap-1.5">
+            {(['en', 'zh', 'fr'] as const).map((lang) => (
+              <button
+                key={lang}
+                onClick={() => setLocale(lang)}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                  locale === lang 
+                    ? 'bg-blue-600 text-white shadow-sm' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {lang.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
 
-            {/* 本金输入 */}
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-2 uppercase">
-                {t.principalLabel}
-              </label>
-              <input
-                type="number"
-                value={principal}
-                onChange={(e) => setPrincipal(Math.max(0, Number(e.target.value)))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition font-semibold"
-              />
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* 左半区：参数调整区 */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-5">
+              
+              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b pb-2">
+                ⚙️ {locale === 'zh' ? '杠杆沙盒输入' : 'Sandbox Inputs'}
+              </h3>
 
-            {/* 总投资规模输入 */}
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-2 uppercase">
-                {t.leverageLabel}
-              </label>
-              <input
-                type="number"
-                value={totalInvestment}
-                onChange={(e) => setTotalInvestment(Math.max(0, Number(e.target.value)))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition font-semibold"
-              />
-            </div>
-
-            {/* 融资利率输入 */}
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-2 uppercase">
-                {t.marginRateLabel}
-              </label>
-              <div className="relative rounded-lg shadow-sm">
+              {/* 本金输入 */}
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-2 uppercase">
+                  {t.principalLabel}
+                </label>
                 <input
-                  type="text"
-                  inputMode="decimal"
-                  value={inputValue}
-                  onChange={handleRateInputChange}
-                  onBlur={handleRateBlur}
-                  className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-semibold outline-none transition"
-                  placeholder={t.customRatePlaceholder}
+                  type="number"
+                  value={principal}
+                  onChange={(e) => setPrincipal(Math.max(0, Number(e.target.value)))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition font-semibold"
                 />
-                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                  <span className="text-gray-400 text-sm font-semibold">%</span>
+              </div>
+
+              {/* 总投资规模输入 */}
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-2 uppercase">
+                  {t.leverageLabel}
+                </label>
+                <input
+                  type="number"
+                  value={totalInvestment}
+                  onChange={(e) => setTotalInvestment(Math.max(0, Number(e.target.value)))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition font-semibold"
+                />
+              </div>
+
+              {/* 融资利率输入 */}
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-2 uppercase">
+                  {t.marginRateLabel}
+                </label>
+                <div className="relative rounded-lg shadow-sm">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={inputValue}
+                    onChange={handleRateInputChange}
+                    onBlur={handleRateBlur}
+                    className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-semibold outline-none transition"
+                    placeholder={t.customRatePlaceholder}
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <span className="text-gray-400 text-sm font-semibold">%</span>
+                  </div>
+                </div>
+                <p className="mt-2 text-xs text-gray-400 leading-normal">
+                  {t.marginRateHelp}
+                </p>
+              </div>
+
+            </div>
+
+            {/* 税务参数控制卡片 */}
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-5">
+              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b pb-2">
+                🍁 {t.taxRateTitle}
+              </h3>
+
+              {/* 省份与自定义税率 */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1.5">
+                    {t.provinceLabel}
+                  </label>
+                  <select
+                    value={province}
+                    onChange={(e) => setProvince(e.target.value)}
+                    disabled={customTaxRate !== ""}
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm outline-none bg-white font-medium disabled:bg-gray-100 disabled:text-gray-400"
+                  >
+                    <option value="ON">Ontario (ON)</option>
+                    <option value="BC">British Columbia (BC)</option>
+                    <option value="QC">Quebec (QC)</option>
+                    <option value="AB">Alberta (AB)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1.5">
+                    {locale === 'zh' ? '手动输入税率 (%)' : 'Manual Tax Rate (%)'}
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Auto"
+                    value={customTaxRate}
+                    onChange={(e) => setCustomTaxRate(e.target.value)}
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm outline-none font-semibold placeholder-gray-400"
+                  />
                 </div>
               </div>
-              <p className="mt-2 text-xs text-gray-400 leading-normal">
-                {t.marginRateHelp}
+
+              {/* 年应税收入 */}
+              {customTaxRate === "" && (
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-2">
+                    {t.incomeLabel}
+                  </label>
+                  <input
+                    type="number"
+                    value={income}
+                    onChange={(e) => setIncome(Math.max(0, Number(e.target.value)))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm outline-none font-semibold"
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-between items-center text-xs bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <span className="text-gray-500 font-medium">{t.marginalTaxRateLabel}:</span>
+                <span className="font-bold text-slate-800 text-sm">
+                  {(taxRatePercent * 100).toFixed(2)}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 右半区：输出结果与比对区 */}
+          <div className="lg:col-span-7 space-y-6">
+            
+            {/* 1. 借贷利息与CRA抵税细目 */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b pb-2">
+                ⚖️ {t.taxDeductibleTitle}
+              </h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                  <span className="block text-xs text-gray-400 font-bold uppercase mb-1">{t.loanAmountLabel}</span>
+                  <span className="text-lg font-extrabold text-gray-800">
+                    ${loanAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                  <span className="block text-xs text-gray-400 font-bold uppercase mb-1">{t.annualInterestLabel}</span>
+                  <span className="text-lg font-extrabold text-red-500">
+                    ${annualInterest.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">{t.taxSavedLabel}:</span>
+                  <span className="font-bold text-green-600">
+                    + ${taxSaved.toLocaleString('en-US', { minimumFractionDigits: 2 })} CAD / yr
+                  </span>
+                </div>
+                
+                <div className="flex justify-between text-sm border-t border-gray-100 pt-3">
+                  <span className="text-gray-500">{t.actualInterestLabel}:</span>
+                  <span className="font-bold text-gray-800">
+                    ${netInterest.toLocaleString('en-US', { minimumFractionDigits: 2 })} CAD
+                  </span>
+                </div>
+
+                <div className="flex justify-between text-sm border-t border-gray-100 pt-3">
+                  <span className="text-gray-500 font-semibold">{t.deductibleRateLabel}:</span>
+                  <span className="font-extrabold text-blue-600 text-base">
+                    {afterTaxMarginRate.toFixed(2)}% <span className="text-xs text-gray-400 font-normal">(vs {marginRate.toFixed(2)}%)</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. 三账户增长模拟对比看板 */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b pb-2">
+                📊 {t.comparisonTitle} <span className="text-xs text-gray-400 font-normal">({locale === 'zh' ? '假设年化回报 7%' : 'Assuming 7% Return'})</span>
+              </h3>
+
+              <div className="space-y-3.5">
+                {/* 普通账户 */}
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-gray-500 font-semibold">{t.nonRegAccount}</span>
+                    <span className="font-bold text-gray-700">${nonRegReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}/yr</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div className="bg-gray-400 h-2 rounded-full" style={{ width: `${Math.min(100, (nonRegReturn / Math.max(marginReturn, 1)) * 100)}%` }}></div>
+                  </div>
+                  <span className="text-[10px] text-gray-400 leading-none">{t.taxDragNote}</span>
+                </div>
+
+                {/* TFSA 账户 */}
+                <div className="pt-2">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-blue-600 font-bold">{t.tfsaAccount}</span>
+                    <span className="font-bold text-blue-600">${tfsaReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}/yr</span>
+                  </div>
+                  <div className="w-full bg-blue-50 rounded-full h-2">
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${Math.min(100, (tfsaReturn / Math.max(marginReturn, 1)) * 100)}%` }}></div>
+                  </div>
+                </div>
+
+                {/* 杠杆账户 */}
+                <div className="pt-2">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-purple-600 font-bold">{t.marginAccount}</span>
+                    <span className="font-bold text-purple-600">${marginReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}/yr</span>
+                  </div>
+                  <div className="w-full bg-purple-50 rounded-full h-2">
+                    <div className="bg-purple-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                  </div>
+                  <span className="text-[10px] text-purple-400 leading-none">
+                    {locale === 'zh' ? '杠杆已享受 CRA 投资借贷利息退税净额测算。' : 'Leverage model factoring in net CRA interest deductions.'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Wealthsimple 推荐卡片 */}
+            <div className="p-4 bg-blue-50/70 rounded-xl border border-blue-100 transition duration-150 ease-in-out hover:bg-blue-50">
+              <h4 className="text-sm font-semibold text-blue-900 mb-1 flex items-center gap-1.5">
+                ✨ {t.recommendTitle}
+              </h4>
+              <p className="text-xs text-blue-700 leading-relaxed font-normal">
+                {t.recommendDesc}
               </p>
             </div>
 
           </div>
-
-          {/* 税务参数控制卡片 */}
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-5">
-            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b pb-2">
-              🍁 {t.taxRateTitle}
-            </h3>
-
-            {/* 省份选择 */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">
-                  {t.provinceLabel}
-                </label>
-                <select
-                  value={province}
-                  onChange={(e) => setProvince(e.target.value)}
-                  disabled={customTaxRate !== ""}
-                  className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm outline-none bg-white font-medium disabled:bg-gray-100 disabled:text-gray-400"
-                >
-                  <option value="ON">Ontario (ON)</option>
-                  <option value="BC">British Columbia (BC)</option>
-                  <option value="QC">Quebec (QC)</option>
-                  <option value="AB">Alberta (AB)</option>
-                </select>
-              </div>
-
-              {/* 手动边际税率重写 */}
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">
-                  {locale === 'zh' ? '手动输入税率 (%)' : 'Manual Tax Rate (%)'}
-                </label>
-                <input
-                  type="number"
-                  placeholder="Auto"
-                  value={customTaxRate}
-                  onChange={(e) => setCustomTaxRate(e.target.value)}
-                  className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm outline-none font-semibold placeholder-gray-400"
-                />
-              </div>
-            </div>
-
-            {/* 年应税收入 */}
-            {customTaxRate === "" && (
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-2">
-                  {t.incomeLabel}
-                </label>
-                <input
-                  type="number"
-                  value={income}
-                  onChange={(e) => setIncome(Math.max(0, Number(e.target.value)))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm outline-none font-semibold"
-                />
-              </div>
-            )}
-
-            <div className="flex justify-between items-center text-xs bg-slate-50 p-3 rounded-lg border border-slate-100">
-              <span className="text-gray-500 font-medium">{t.marginalTaxRateLabel}:</span>
-              <span className="font-bold text-slate-800 text-sm">
-                {(taxRatePercent * 100).toFixed(2)}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* 右半区：输出结果与比对区 (12列中的7列) */}
-        <div className="lg:col-span-7 space-y-6">
-          
-          {/* 1. 借贷利息与CRA抵税细目 */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b pb-2">
-              ⚖️ {t.taxDeductibleTitle}
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                <span className="block text-xs text-gray-400 font-bold uppercase mb-1">{t.loanAmountLabel}</span>
-                <span className="text-lg font-extrabold text-gray-800">
-                  ${loanAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                <span className="block text-xs text-gray-400 font-bold uppercase mb-1">{t.annualInterestLabel}</span>
-                <span className="text-lg font-extrabold text-red-500">
-                  ${annualInterest.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-3 pt-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">{t.taxSavedLabel}:</span>
-                <span className="font-bold text-green-600">
-                  + ${taxSaved.toLocaleString('en-US', { minimumFractionDigits: 2 })} CAD / yr
-                </span>
-              </div>
-              
-              <div className="flex justify-between text-sm border-t border-gray-100 pt-3">
-                <span className="text-gray-500">{t.actualInterestLabel}:</span>
-                <span className="font-bold text-gray-800">
-                  ${netInterest.toLocaleString('en-US', { minimumFractionDigits: 2 })} CAD
-                </span>
-              </div>
-
-              <div className="flex justify-between text-sm border-t border-gray-100 pt-3">
-                <span className="text-gray-500 font-semibold">{t.deductibleRateLabel}:</span>
-                <span className="font-extrabold text-blue-600 text-base">
-                  {afterTaxMarginRate.toFixed(2)}% <span className="text-xs text-gray-400 font-normal">(vs {marginRate.toFixed(2)}%)</span>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. 三账户增长模拟对比看板 */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b pb-2">
-              📊 {t.comparisonTitle} <span className="text-xs text-gray-400 font-normal">({locale === 'zh' ? '假设年化回报 7%' : 'Assuming 7% Return'})</span>
-            </h3>
-
-            <div className="space-y-3.5">
-              {/* 普通账户 */}
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-500 font-semibold">{t.nonRegAccount}</span>
-                  <span className="font-bold text-gray-700">${nonRegReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}/yr</span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-2">
-                  <div className="bg-gray-400 h-2 rounded-full" style={{ width: `${Math.min(100, (nonRegReturn / Math.max(marginReturn, 1)) * 100)}%` }}></div>
-                </div>
-                <span className="text-[10px] text-gray-400 leading-none">{t.taxDragNote}</span>
-              </div>
-
-              {/* TFSA 账户 */}
-              <div className="pt-2">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-blue-600 font-bold">{t.tfsaAccount}</span>
-                  <span className="font-bold text-blue-600">${tfsaReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}/yr</span>
-                </div>
-                <div className="w-full bg-blue-50 rounded-full h-2">
-                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${Math.min(100, (tfsaReturn / Math.max(marginReturn, 1)) * 100)}%` }}></div>
-                </div>
-              </div>
-
-              {/* 杠杆账户 */}
-              <div className="pt-2">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-purple-600 font-bold">{t.marginAccount}</span>
-                  <span className="font-bold text-purple-600">${marginReturn.toLocaleString('en-US', { maximumFractionDigits: 0 })}/yr</span>
-                </div>
-                <div className="w-full bg-purple-50 rounded-full h-2">
-                  <div className="bg-purple-500 h-2 rounded-full" style={{ width: '100%' }}></div>
-                </div>
-                <span className="text-[10px] text-purple-400 leading-none">
-                  {locale === 'zh' ? '杠杆已享受 CRA 投资借贷利息退税净额测算。' : 'Leverage model factoring in net CRA interest deductions.'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* 3. Wealthsimple 推荐卡片 */}
-          <div className="p-4 bg-blue-50/70 rounded-xl border border-blue-100 transition duration-150 ease-in-out hover:bg-blue-50">
-            <h4 className="text-sm font-semibold text-blue-900 mb-1 flex items-center gap-1.5">
-              ✨ {t.recommendTitle}
-            </h4>
-            <p className="text-xs text-blue-700 leading-relaxed font-normal">
-              {t.recommendDesc}
-            </p>
-          </div>
-
         </div>
       </div>
     </div>
   );
 };
+
+// ==========================================
+// 4. React 项目标准挂载入口
+// ==========================================
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+}
