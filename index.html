@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>加拿大复利与 Margin 杠杆抵税计算器</title>
-    <!-- 引入 Tailwind CSS 用于快速美化界面 -->
+    <title>Canada Compound Interest & Margin Tax-Deductibility Calculator</title>
+    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 简单微调滑块样式 */
         input[type="range"] {
             accent-color: #2563eb;
         }
@@ -16,12 +15,23 @@
 <body class="bg-gray-50 text-gray-800 min-h-screen py-10 px-4">
 
     <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-        <!-- 头部 Banner -->
-        <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-8 text-center">
-            <h1 class="text-3xl font-extrabold mb-2">🇨🇦 加拿大复利与 Margin 杠杆抵税计算器</h1>
-            <p class="text-blue-100 max-w-2xl mx-auto text-sm">
-                专为加拿大投资者设计。对比普通定投 vs. 利用应税账户（Non-Reg）进行 Margin 投资的复利效果。CRA 规定用于投资产生收入的借贷利息可全额抵扣个人所得税。
-            </p>
+        
+        <!-- 头部 Banner 与语言切换器 -->
+        <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-8 relative">
+            
+            <!-- 语言切换按钮组合 (右上角) -->
+            <div class="absolute top-4 right-4 flex space-x-2">
+                <button onclick="changeLanguage('en')" id="lang-en" class="px-2.5 py-1 text-xs font-bold rounded border transition-colors border-white bg-white text-blue-800">EN</button>
+                <button onclick="changeLanguage('zh')" id="lang-zh" class="px-2.5 py-1 text-xs font-bold rounded border transition-colors border-blue-400 hover:bg-white hover:text-blue-800">中文</button>
+                <button onclick="changeLanguage('fr')" id="lang-fr" class="px-2.5 py-1 text-xs font-bold rounded border transition-colors border-blue-400 hover:bg-white hover:text-blue-800">FR</button>
+            </div>
+
+            <div class="text-center mt-2">
+                <h1 id="i18n-title" class="text-3xl font-extrabold mb-2">Compound Interest & Margin Tax-Deductibility Calculator</h1>
+                <p id="i18n-subtitle" class="text-blue-100 max-w-2xl mx-auto text-sm">
+                    Specifically designed for Canadian investors. Compare standard investing vs. investing with margin in a non-registered account. CRA allows full deduction of interest expenses incurred to earn income.
+                </p>
+            </div>
         </div>
 
         <!-- 主体计算区域 -->
@@ -29,54 +39,64 @@
             
             <!-- 左侧：参数输入区 -->
             <div class="space-y-6">
-                <h2 class="text-xl font-bold text-gray-700 border-b pb-2">调整投资参数</h2>
+                <h2 id="i18n-section-params" class="text-xl font-bold text-gray-700 border-b pb-2">Adjust Parameters</h2>
                 
                 <!-- 初始资金 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">初始本金 (Initial Cash): $<span id="lbl-principal">10,000</span></label>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">
+                        <span id="i18n-label-principal">Initial Principal</span>: $<span id="lbl-principal">10,000</span>
+                    </label>
                     <input type="range" id="param-principal" min="1000" max="100000" step="5000" value="10000" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
                 <!-- 每月定投 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">每月定投金额 (Monthly Deposit): $<span id="lbl-monthly">500</span></label>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">
+                        <span id="i18n-label-monthly">Monthly Contribution</span>: $<span id="lbl-monthly">500</span>
+                    </label>
                     <input type="range" id="param-monthly" min="0" max="5000" step="100" value="500" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
                 <!-- 预期年化收益率 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">预期年化收益率 (Expected Return): <span id="lbl-return">8.0</span>%</label>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">
+                        <span id="i18n-label-return">Expected Annual Return</span>: <span id="lbl-return">8.0</span>%
+                    </label>
                     <input type="range" id="param-return" min="1" max="15" step="0.5" value="8" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
                 <!-- 投资年限 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">投资年限 (Years to Grow): <span id="lbl-years">20</span> 年</label>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">
+                        <span id="i18n-label-years">Years to Grow</span>: <span id="lbl-years">20</span> <span id="lbl-years-unit">Years</span>
+                    </label>
                     <input type="range" id="param-years" min="1" max="40" step="1" value="20" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
-                <h2 class="text-xl font-bold text-gray-700 border-b pb-2 pt-4">CRA 杠杆抵税参数</h2>
+                <h2 id="i18n-section-tax" class="text-xl font-bold text-gray-700 border-b pb-2 pt-4">CRA Leverage & Tax Parameters</h2>
 
                 <!-- 杠杆比例 -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-600 mb-1">
-                        Margin 杠杆比例 (Leverage Ratio): <span id="lbl-leverage">50</span>% 
-                        <span class="text-xs text-gray-400 block">（借款占自有现金的比例，50% 相当于 1.5 倍杠杆）</span>
+                        <span id="i18n-label-leverage">Margin Leverage Ratio</span>: <span id="lbl-leverage">50</span>% 
+                        <span id="i18n-note-leverage" class="text-xs text-gray-400 block">(borrowed amount relative to own cash; 50% equals 1.5x leverage)</span>
                     </label>
                     <input type="range" id="param-leverage" min="0" max="100" step="10" value="50" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
                 <!-- 券商原始借贷利率 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">券商 Margin 借贷利率 (Gross Rate): <span id="lbl-gross">6.50</span>%</label>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">
+                        <span id="i18n-label-gross">Broker Gross Margin Rate</span>: <span id="lbl-gross">6.50</span>%
+                    </label>
                     <input type="range" id="param-gross" min="2" max="12" step="0.25" value="6.5" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
                 <!-- 个人边际税率 -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-600 mb-1">
-                        个人边际税率 (Marginal Tax Rate): <span id="lbl-tax">35</span>%
-                        <span class="text-xs text-gray-400 block">（安省中产阶级通常在 30% - 43% 之间）</span>
+                        <span id="i18n-label-tax">Marginal Tax Rate</span>: <span id="lbl-tax">35</span>%
+                        <span id="i18n-note-tax" class="text-xs text-gray-400 block">(typically 30% - 43% for middle-income in Ontario)</span>
                     </label>
                     <input type="range" id="param-tax" min="0" max="54" step="1" value="35" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
@@ -85,44 +105,44 @@
             <!-- 右侧：实时计算结果展示区 -->
             <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col justify-between">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-700 mb-6 border-b pb-2">模拟测算结果</h2>
+                    <h2 id="i18n-section-results" class="text-xl font-bold text-gray-700 mb-6 border-b pb-2">Projection Results</h2>
                     
                     <!-- 核心指标 1：无杠杆 -->
                     <div class="mb-6">
-                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">普通复利终值 (无杠杆)</span>
+                        <span id="i18n-res-standard-title" class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Standard Compounding (No Margin)</span>
                         <div class="text-3xl font-bold text-gray-700 mt-1" id="res-standard">$0</div>
-                        <p class="text-xs text-gray-500 mt-1">仅靠自有资金加每月定投积攒的资产。</p>
+                        <p id="i18n-res-standard-note" class="text-xs text-gray-500 mt-1">Wealth accumulated purely through own cash and monthly contributions.</p>
                     </div>
 
                     <!-- 核心指标 2：杠杆+抵税 -->
                     <div class="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">杠杆套利终值 (扣除债务)</span>
+                        <span id="i18n-res-leveraged-title" class="text-xs font-bold text-blue-600 uppercase tracking-wider">Leveraged Portfolio Net Value (Debt Subtracted)</span>
                         <div class="text-4xl font-extrabold text-blue-700 mt-1" id="res-leveraged">$0</div>
-                        <p class="text-xs text-blue-600 mt-1">利用 Margin 放大本金并每年扣减税收后的净资产。</p>
+                        <p id="i18n-res-leveraged-note" class="text-xs text-blue-600 mt-1">Net portfolio value using margin and claiming annual tax deductions.</p>
                     </div>
 
                     <!-- 核心指标 3：累计省税与实际成本 -->
                     <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 text-sm">
                         <div>
-                            <span class="text-xs text-gray-400 block">实际借款年化成本</span>
+                            <span id="i18n-res-netrate-title" class="text-xs text-gray-400 block">Net Annual Borrowing Cost</span>
                             <span class="font-bold text-gray-700" id="res-net-rate">0.00%</span>
                         </div>
                         <div>
-                            <span class="text-xs text-gray-400 block">累计向 CRA 抵税</span>
+                            <span id="i18n-res-taxsaved-title" class="text-xs text-gray-400 block">Cumulative Tax Saved (CRA)</span>
                             <span class="font-bold text-green-600" id="res-tax-saved">$0</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 免责声明与变现链接预留 -->
+                <!-- 免责声明与推荐链接 -->
                 <div class="mt-8 pt-4 border-t border-gray-200">
-                    <p class="text-xs text-gray-400 leading-relaxed mb-4">
-                        * 免责声明：本工具仅供学习和测算娱乐，不构成任何投资或税务建议。借贷投资存在风险，请根据个人承受能力合理使用杠杆。
+                    <p id="i18n-disclaimer" class="text-xs text-gray-400 leading-relaxed mb-4">
+                        * Disclaimer: This tool is for educational and illustrative purposes only and does not constitute financial or tax advice. Investing on margin involves risk.
                     </p>
                     <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-xs">
-                        <p class="text-indigo-800 font-semibold mb-1">💡 降维降低借贷成本：</p>
-                        <p class="text-indigo-600">
-                            目前券商借贷利率过高？**Interactive Brokers (IBKR)** 提供加拿大极具竞争力的低借贷利率。<a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">点击此处了解 IBKR 开户福利 ↗</a>
+                        <p id="i18n-affiliate-title" class="text-indigo-800 font-semibold mb-1">💡 Optimize Borrowing Costs:</p>
+                        <p id="i18n-affiliate-body" class="text-indigo-600">
+                            Is your broker charging too much? **Interactive Brokers (IBKR)** offers some of the lowest margin rates in Canada. <a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">Click here to explore IBKR's benefits ↗</a>
                         </p>
                     </div>
                 </div>
@@ -131,9 +151,93 @@
         </div>
     </div>
 
-    <!-- 核心计算脚本 -->
+    <!-- 核心多语言与计算引擎脚本 -->
     <script>
-        // 获取所有 DOM 节点
+        // 1. 语言包定义
+        const translations = {
+            en: {
+                title: "Canada Compound Interest & Margin Tax-Deductibility Calculator",
+                subtitle: "Specifically designed for Canadian investors. Compare standard investing vs. investing with margin in a non-registered account. CRA allows full deduction of interest expenses incurred to earn income.",
+                sectionParams: "Adjust Parameters",
+                labelPrincipal: "Initial Principal",
+                labelMonthly: "Monthly Contribution",
+                labelReturn: "Expected Annual Return",
+                labelYears: "Years to Grow",
+                yearsUnit: "Years",
+                sectionTax: "CRA Leverage & Tax Parameters",
+                labelLeverage: "Margin Leverage Ratio",
+                noteLeverage: "(borrowed amount relative to own cash; 50% equals 1.5x leverage)",
+                labelGross: "Broker Gross Margin Rate",
+                labelTax: "Marginal Tax Rate",
+                noteTax: "(typically 30% - 43% for middle-income in Ontario)",
+                sectionResults: "Projection Results",
+                resStandardTitle: "Standard Compounding (No Margin)",
+                resStandardNote: "Wealth accumulated purely through own cash and monthly contributions.",
+                resLeveragedTitle: "Leveraged Portfolio Net Value (Debt Subtracted)",
+                resLeveragedNote: "Net portfolio value using margin and claiming annual tax deductions.",
+                resNetRateTitle: "Net Annual Borrowing Cost",
+                resTaxSavedTitle: "Cumulative Tax Saved (CRA)",
+                disclaimer: "* Disclaimer: This tool is for educational and illustrative purposes only and does not constitute financial or tax advice. Investing on margin involves risk.",
+                affiliateTitle: "💡 Optimize Borrowing Costs:",
+                affiliateBody: 'Is your broker charging too much? **Interactive Brokers (IBKR)** offers some of the lowest margin rates in Canada. <a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">Click here to explore IBKR\'s benefits ↗</a>'
+            },
+            zh: {
+                title: "🇨🇦 加拿大复利与 Margin 杠杆抵税计算器",
+                subtitle: "专为加拿大投资者设计。对比普通定投 vs. 利用应税账户（Non-Reg）进行 Margin 投资的复利效果。CRA 规定用于投资产生收入的借贷利息可全额抵扣个人所得税。",
+                sectionParams: "调整投资参数",
+                labelPrincipal: "初始本金",
+                labelMonthly: "每月定投金额",
+                labelReturn: "预期年化收益率",
+                labelYears: "投资年限",
+                yearsUnit: "年",
+                sectionTax: "CRA 杠杆抵税参数",
+                labelLeverage: "Margin 杠杆比例",
+                noteLeverage: "（借款占自有现金的比例，50% 相当于 1.5 倍杠杆）",
+                labelGross: "券商 Margin 借贷利率",
+                labelTax: "个人边际税率",
+                noteTax: "（安省中产阶级通常在 30% - 43% 之间）",
+                sectionResults: "模拟测算结果",
+                resStandardTitle: "普通复利终值 (无杠杆)",
+                resStandardNote: "仅靠自有资金加每月定投积攒的资产。",
+                resLeveragedTitle: "杠杆套利终值 (扣除债务)",
+                resLeveragedNote: "利用 Margin 放大本金并每年扣减税收后的净资产。",
+                resNetRateTitle: "实际借款年化成本",
+                resTaxSavedTitle: "累计向 CRA 抵税",
+                disclaimer: "* 免责声明：本工具仅供学习和测算娱乐，不构成任何投资或税务建议。借贷投资存在风险，请根据个人承受能力合理使用杠杆。",
+                affiliateTitle: "💡 降低借贷成本：",
+                affiliateBody: '目前券商借贷利率过高？**Interactive Brokers (IBKR)** 提供加拿大极具竞争力的低借贷利率。<a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">点击此处了解 IBKR 开户福利 ↗</a>'
+            },
+            fr: {
+                title: "Calculateur d'Intérêts Composés et Levier Fiscal Canadien",
+                subtitle: "Conçu spécifiquement pour les investisseurs canadiens. Comparez l'investissement standard et l'effet de levier (Margin) dans un compte non enregistré. L'ARC permet de déduire entièrement les intérêts payés pour générer un revenu.",
+                sectionParams: "Ajuster les paramètres",
+                labelPrincipal: "Capital initial",
+                labelMonthly: "Contribution mensuelle",
+                labelReturn: "Rendement annuel prévu",
+                labelYears: "Années de croissance",
+                yearsUnit: "Ans",
+                sectionTax: "Paramètres de levier et d'impôt de l'ARC",
+                labelLeverage: "Ratio de levier (Margin)",
+                noteLeverage: "(montant emprunté par rapport aux fonds propres; 50% équivaut à un levier de 1,5x)",
+                labelGross: "Taux de marge brut du courtier",
+                labelTax: "Taux marginal d'imposition",
+                noteTax: "(généralement entre 30% et 43% pour la classe moyenne en Ontario)",
+                sectionResults: "Résultats de la projection",
+                resStandardTitle: "Rendement composé standard (Sans levier)",
+                resStandardNote: "Patrimoine accumulé uniquement par vos propres fonds et versements mensuels.",
+                resLeveragedTitle: "Valeur nette du portefeuille avec levier (Dette déduite)",
+                resLeveragedNote: "Valeur nette en utilisant la marge et en déduisant les impôts annuels.",
+                resNetRateTitle: "Coût d'emprunt annuel net",
+                resTaxSavedTitle: "Économies d'impôt cumulées (ARC)",
+                disclaimer: "* Avertissement : Cet outil est fourni à des fins éducatives et illustratives uniquement et ne constitue pas un conseil financier ou fiscal. L'investissement sur marge comporte des risques.",
+                affiliateTitle: "💡 Optimisez vos coûts d'emprunt :",
+                affiliateBody: 'Votre courtier facture trop cher? **Interactive Brokers (IBKR)** offre des taux de marge parmi les plus bas au Canada. <a href="#" class="text-indigo-700 de soulignement font-bold hover:text-indigo-900">Cliquez ici pour découvrir les avantages d\'IBKR ↗</a>'
+            }
+        };
+
+        let currentLang = 'en'; // 默认语言：英文
+
+        // 获取 DOM 节点
         const elPrincipal = document.getElementById('param-principal');
         const elMonthly = document.getElementById('param-monthly');
         const elReturn = document.getElementById('param-return');
@@ -146,6 +250,7 @@
         const lblMonthly = document.getElementById('lbl-monthly');
         const lblReturn = document.getElementById('lbl-return');
         const lblYears = document.getElementById('lbl-years');
+        const lblYearsUnit = document.getElementById('lbl-years-unit');
         const lblLeverage = document.getElementById('lbl-leverage');
         const lblGross = document.getElementById('lbl-gross');
         const lblTax = document.getElementById('lbl-tax');
@@ -155,14 +260,59 @@
         const resNetRate = document.getElementById('res-net-rate');
         const resTaxSaved = document.getElementById('res-tax-saved');
 
-        // 数字格式化辅助函数
+        // 切换语言函数
+        function changeLanguage(lang) {
+            currentLang = lang;
+            
+            // 1. 更新翻译文字
+            document.getElementById('i18n-title').innerText = translations[lang].title;
+            document.getElementById('i18n-subtitle').innerText = translations[lang].subtitle;
+            document.getElementById('i18n-section-params').innerText = translations[lang].sectionParams;
+            document.getElementById('i18n-label-principal').innerText = translations[lang].labelPrincipal;
+            document.getElementById('i18n-label-monthly').innerText = translations[lang].labelMonthly;
+            document.getElementById('i18n-label-return').innerText = translations[lang].labelReturn;
+            document.getElementById('i18n-label-years').innerText = translations[lang].labelYears;
+            document.getElementById('i18n-section-tax').innerText = translations[lang].sectionTax;
+            document.getElementById('i18n-label-leverage').innerText = translations[lang].labelLeverage;
+            document.getElementById('i18n-note-leverage').innerText = translations[lang].noteLeverage;
+            document.getElementById('i18n-label-gross').innerText = translations[lang].labelGross;
+            document.getElementById('i18n-label-tax').innerText = translations[lang].labelTax;
+            document.getElementById('i18n-note-tax').innerText = translations[lang].noteTax;
+            document.getElementById('i18n-section-results').innerText = translations[lang].sectionResults;
+            document.getElementById('i18n-res-standard-title').innerText = translations[lang].resStandardTitle;
+            document.getElementById('i18n-res-standard-note').innerText = translations[lang].resStandardNote;
+            document.getElementById('i18n-res-leveraged-title').innerText = translations[lang].resLeveragedTitle;
+            document.getElementById('i18n-res-leveraged-note').innerText = translations[lang].resLeveragedNote;
+            document.getElementById('i18n-res-netrate-title').innerText = translations[lang].resNetRateTitle;
+            document.getElementById('i18n-res-taxsaved-title').innerText = translations[lang].resTaxSavedTitle;
+            document.getElementById('i18n-disclaimer').innerText = translations[lang].disclaimer;
+            document.getElementById('i18n-affiliate-title').innerText = translations[lang].affiliateTitle;
+            document.getElementById('i18n-affiliate-body').innerHTML = translations[lang].affiliateBody;
+
+            // 2. 动态调整单位
+            lblYearsUnit.innerText = translations[lang].yearsUnit;
+
+            // 3. 更新按钮的高亮视觉状态
+            ['en', 'zh', 'fr'].forEach(l => {
+                const btn = document.getElementById(`lang-${l}`);
+                if (l === lang) {
+                    btn.className = "px-2.5 py-1 text-xs font-bold rounded border transition-colors border-white bg-white text-blue-800";
+                } else {
+                    btn.className = "px-2.5 py-1 text-xs font-bold rounded border transition-colors border-blue-400 hover:bg-white hover:text-blue-800";
+                }
+            });
+
+            // 4. 重新计算生成新语言下的数值
+            recalculate();
+        }
+
+        // 数字格式化
         function formatMoney(num) {
             return '$' + Math.round(num).toLocaleString('en-US');
         }
 
         // 核心计算逻辑
         function recalculate() {
-            // 1. 读取并更新滑动条数值显示
             const principal = parseFloat(elPrincipal.value);
             const monthly = parseFloat(elMonthly.value);
             const r = parseFloat(elReturn.value) / 100;
@@ -179,15 +329,13 @@
             lblGross.innerText = (grossRate * 100).toFixed(2);
             lblTax.innerText = (taxRate * 100).toFixed(0);
 
-            // 2. 核心数学计算
-            // 实际借贷利率 (抵税后)
+            // 实际借款利息
             const netBorrowRate = grossRate * (1 - taxRate);
             resNetRate.innerText = (netBorrowRate * 100).toFixed(2) + '%';
 
-            // 月复利率
             const monthlyR = Math.pow(1 + r, 1 / 12) - 1;
 
-            // 模拟 1：无杠杆复利
+            // 模拟 1：标准定投
             let standardValue = principal;
             for (let y = 1; y <= years; y++) {
                 for (let m = 0; m < 12; m++) {
@@ -195,47 +343,40 @@
                 }
             }
 
-            // 模拟 2：Margin 杠杆及利息抵税
+            // 模拟 2：杠杆 + 省税
             let leveragedOwnCash = principal; 
             let cumulativeTaxSaved = 0;
 
             for (let y = 1; y <= years; y++) {
-                // 每年初，确定当年的债务额度 (自有资金 * 杠杆比)
                 const debtThisYear = leveragedOwnCash * leverageRatio;
                 let totalInvestedAsset = leveragedOwnCash + debtThisYear;
 
-                // 这一年内的复利增值
                 for (let m = 0; m < 12; m++) {
                     totalInvestedAsset = (totalInvestedAsset + monthly) * (1 + monthlyR);
                 }
 
-                // 算账：今年产生的利息及省税
                 const interestPaid = debtThisYear * grossRate;
                 const taxSaved = interestPaid * taxRate;
                 const netInterestCost = interestPaid - taxSaved;
 
                 cumulativeTaxSaved += taxSaved;
-
-                // 年末净资产 = 总资产 - 归还债务本金 - 实际净利息支出
                 leveragedOwnCash = totalInvestedAsset - debtThisYear - netInterestCost;
                 
-                // 极极端情况下的破产线保底（净资产不为负）
                 if (leveragedOwnCash < 0) leveragedOwnCash = 0;
             }
 
-            // 3. 渲染结果到页面上
             resStandard.innerText = formatMoney(standardValue);
             resLeveraged.innerText = formatMoney(leveragedOwnCash);
             resTaxSaved.innerText = formatMoney(cumulativeTaxSaved);
         }
 
-        // 监听所有滑块变动事件
+        // 监听滑块事件
         [elPrincipal, elMonthly, elReturn, elYears, elLeverage, elGross, elTax].forEach(el => {
             el.addEventListener('input', recalculate);
         });
 
-        // 首次加载初始化计算
-        recalculate();
+        // 页面首次载入：执行英文默认渲染
+        changeLanguage('en');
     </script>
 </body>
 </html>
