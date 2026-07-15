@@ -9,6 +9,7 @@
     <style>
         input[type="range"] { accent-color: #2563eb; }
         input[type="text"]::-webkit-outer-spin-button, input[type="text"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        html { scroll-behavior: smooth; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen py-10 px-4">
@@ -17,48 +18,59 @@
     <!-- Header -->
     <div class="bg-gradient-to-r from-slate-800 to-indigo-950 text-white p-8 relative">
         <div class="absolute top-4 right-4 flex space-x-2 text-sm z-10">
+            <a href="#referrals-container" class="px-2.5 py-1 text-xs font-bold rounded border border-amber-400 bg-amber-100 text-amber-800 hover:bg-amber-500 hover:text-white transition-all">☕ Support</a>
             <button onclick="changeLanguage('en')" class="px-2.5 py-1 text-xs font-bold rounded border border-white bg-white text-slate-800">EN</button>
             <button onclick="changeLanguage('zh')" class="px-2.5 py-1 text-xs font-bold rounded border border-indigo-400 hover:bg-white hover:text-slate-800">中文</button>
             <button onclick="changeLanguage('fr')" class="px-2.5 py-1 text-xs font-bold rounded border border-indigo-400 hover:bg-white hover:text-slate-800">FR</button>
         </div>
         <div class="text-center mt-2">
             <h1 id="i18n-title" class="text-3xl font-extrabold mb-2 tracking-tight">Canada All-Account Growth & Leverage Sandbox</h1>
-            <p id="i18n-subtitle" class="text-indigo-100 max-w-2xl mx-auto text-sm leading-relaxed">Compare Non-Registered, TFSA, and Margin accounts in real-time.</p>
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Inputs -->
         <div class="space-y-6">
-            <h2 id="i18n-section-params" class="text-xl font-bold text-gray-700 border-b pb-2">Adjust Parameters</h2>
-            
-            <!-- Dynamic Inputs -->
+            <h2 class="text-xl font-bold text-gray-700 border-b pb-2">Adjust Parameters</h2>
             <div>
                 <label class="text-sm font-semibold text-gray-600">Initial Principal</label>
                 <input type="text" id="input-principal" class="w-full bg-gray-100 border rounded-lg px-2 py-1 font-bold" value="10,000">
                 <input type="range" id="param-principal" min="1000" max="100000" step="1000" value="10000" class="w-full">
             </div>
-            
-            <div>
-                <label class="text-sm font-semibold text-gray-600">Monthly Contribution</label>
-                <input type="text" id="input-monthly" class="w-full bg-gray-100 border rounded-lg px-2 py-1 font-bold" value="500">
-                <input type="range" id="param-monthly" min="0" max="10000" step="100" value="500" class="w-full">
-            </div>
         </div>
 
-        <div class="bg-slate-50 p-6 rounded-xl border border-gray-200">
-            <h2 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Analysis Hub</h2>
-            <div id="display-card-bg" class="mb-6 p-5 bg-indigo-50 border rounded-xl">
-                <span class="text-xs font-bold text-indigo-600 uppercase">Portfolio Net Value</span>
-                <div class="text-3xl font-extrabold text-indigo-900" id="display-card-value">$0</div>
+        <!-- Right Side: Analysis Hub -->
+        <div class="bg-slate-50 p-6 rounded-xl border border-gray-200 flex flex-col justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Analysis Hub</h2>
+                <div class="mb-6 p-5 bg-indigo-50 border rounded-xl">
+                    <span class="text-xs font-bold text-indigo-600 uppercase">Portfolio Net Value</span>
+                    <div class="text-3xl font-extrabold text-indigo-900" id="display-card-value">$0</div>
+                </div>
+            </div>
+
+            <!-- Embedded Support Callout -->
+            <div id="support-callout" class="mt-8 pt-6 border-t border-gray-200">
+                <div class="bg-gradient-to-br from-indigo-50 to-white p-4 rounded-xl border border-indigo-100 shadow-sm transition-all hover:shadow-md">
+                    <div class="flex items-start gap-3">
+                        <div class="text-2xl">☕</div>
+                        <div>
+                            <h4 class="text-sm font-bold text-indigo-900">Enjoying this tool?</h4>
+                            <p class="text-[11px] text-indigo-600 mt-1 leading-relaxed">
+                                If this tool helped your financial planning, consider <a href="https://buymeacoffee.com/" target="_blank" class="font-bold underline">buying me a coffee</a> to support future features.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Referral Grid Container -->
-    <div class="bg-gray-50 border-t px-8 py-8">
+    <div id="referrals-container" class="bg-gray-50 border-t px-8 py-8">
         <h5 id="i18n-grid-title" class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">My Financial Product Referrals</h5>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="referrals-container"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="referrals-grid"></div>
     </div>
 </div>
 
@@ -86,7 +98,7 @@ function changeLanguage(lang) {
 }
 
 function renderReferralGrid() {
-    const container = document.getElementById('referrals-container');
+    const container = document.getElementById('referrals-grid');
     container.innerHTML = refList.map(item => `
         <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <h3 class="font-bold text-sm">${item.name}</h3>
@@ -96,21 +108,13 @@ function renderReferralGrid() {
     `).join('');
 }
 
-function recalculate() {
-    // 这里是你核心的计算逻辑入口
-    console.log("Recalculating...");
-}
-
-// 初始化交互
-document.querySelectorAll('input[type="range"]').forEach(slider => {
-    slider.addEventListener('input', (e) => {
-        const textInput = slider.previousElementSibling;
-        if(textInput) textInput.value = e.target.value;
-        recalculate();
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+    renderReferralGrid();
+    document.getElementById('param-principal').addEventListener('input', (e) => {
+        document.getElementById('input-principal').value = e.target.value;
     });
 });
-
-renderReferralGrid();
 </script>
 </body>
 </html>
