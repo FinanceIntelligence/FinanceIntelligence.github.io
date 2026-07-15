@@ -152,11 +152,11 @@ Compare Non-Registered, TFSA, and Margin tax-deductible accounts in real-time. T
 <div class="flex justify-between items-center mb-1.5">
 <label id="i18n-label-gross" class="text-sm font-semibold text-gray-600">Broker Gross Margin Rate</label>
 <div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
-<input type="number" id="input-gross" step="0.01" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="6.50">
+<input type="number" id="input-gross" step="0.01" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="3.95">
 <span class="text-gray-500 text-xs ml-1">%</span>
 </div>
 </div>
-<input type="range" id="param-gross" min="1" max="15" step="0.25" value="6.5" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+<input type="range" id="param-gross" min="1" max="15" step="0.25" value="3.95" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
 </div>
 
 <!-- Tax Mode Switcher (Toggle) -->
@@ -288,7 +288,7 @@ Compare Non-Registered, TFSA, and Margin tax-deductible accounts in real-time. T
 <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-xs">
 <p id="i18n-affiliate-title" class="text-indigo-800 font-semibold mb-1">💡 Optimize Borrowing Costs:</p>
 <p id="i18n-affiliate-body" class="text-indigo-600">
-Is your broker charging too much? **Interactive Brokers (IBKR)** offers some of the lowest margin rates in Canada. <a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">Click here to explore IBKR's benefits ↗</a>
+Is your broker charging too much? **Wealthsimple** offers industry-leading margin rates in Canada starting at **3.95%** (CAD). <a href="https://www.wealthsimple.com/en-ca/trade/margin" target="_blank" rel="noopener noreferrer" class="text-indigo-700 underline font-bold hover:text-indigo-900">Click here to explore Wealthsimple's Margin accounts ↗</a>
 </p>
 </div>
 <p id="i18n-disclaimer" class="text-[10px] text-gray-400 leading-relaxed mt-2.5">
@@ -339,7 +339,7 @@ sectionResults: "Analysis Hub",
 focusPrompt: "Select Account Focus View:",
 disclaimer: "* Disclaimer: This tool is for educational purposes only and does not constitute financial or tax advice. Investing on margin involves risk.",
 affiliateTitle: "💡 Optimize Borrowing Costs:",
-affiliateBody: 'Is your broker charging too much? **Interactive Brokers (IBKR)** offers some of the lowest margin rates in Canada. <a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">Click here to explore IBKR\'s benefits ↗</a>',
+affiliateBody: 'Is your broker charging too much? **Wealthsimple** offers industry-leading margin rates in Canada starting at **3.95%** (CAD). <a href="https://www.wealthsimple.com/en-ca/trade/margin" target="_blank" rel="noopener noreferrer" class="text-indigo-700 underline font-bold hover:text-indigo-900">Click here to explore Wealthsimple\'s Margin accounts ↗</a>',
 supportTitle: "Support This Project",
 supportSubtitle: "If this tool helped you optimize your portfolio, consider supporting my work!",
 btnDonate: "Buy Me a Coffee",
@@ -383,7 +383,7 @@ sectionResults: "全景观测中心",
 focusPrompt: "选择核心分析账户主视角：",
 disclaimer: "* 免责声明：本工具仅供学习和测算娱乐，不构成任何投资或税务建议。借贷投资存在风险，请根据个人承受能力合理使用杠杆。",
 affiliateTitle: "💡 降低借贷成本：",
-affiliateBody: '目前券商借贷利率过高？**Interactive Brokers (IBKR)** 提供加拿大极具竞争力的低借贷利率。<a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">点击此处了解 IBKR 开户福利 ↗</a>',
+affiliateBody: '目前券商借贷利率过高？**Wealthsimple** 提供加拿大低至 **3.95%** 起的超具竞争力 Margin 借贷利率。<a href="https://www.wealthsimple.com/en-ca/trade/margin" target="_blank" rel="noopener noreferrer" class="text-indigo-700 underline font-bold hover:text-indigo-900">点击此处了解 Wealthsimple 的 Margin 账户 ↗</a>',
 supportTitle: "支持此项目",
 supportSubtitle: "如果这个工具帮您看清了杠杆套利路径，欢迎给创作者点个赞或给予支持！",
 btnDonate: "请作者喝杯咖啡",
@@ -427,7 +427,7 @@ sectionResults: "Centre d'analyse",
 focusPrompt: "Sélectionnez le type de compte principal à analyser:",
 disclaimer: "* Avis de non-responsabilité: Cet outil est à but éducatif uniquement et ne constitue pas un conseil financier ou fiscal.",
 affiliateTitle: "💡 Optimiser les coûts d'emprunt:",
-affiliateBody: 'Votre courtier facture trop cher? **Interactive Brokers (IBKR)** propose des taux très bas au Canada. <a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">Cliquez ici pour explorer IBKR ↗</a>',
+affiliateBody: 'Votre courtier facture trop cher? **Wealthsimple** propose des taux à partir de **3,95%** (CAD) au Canada. <a href="https://www.wealthsimple.com/en-ca/trade/margin" target="_blank" rel="noopener noreferrer" class="text-indigo-700 underline font-bold hover:text-indigo-900">Cliquez ici pour explorer Wealthsimple ↗</a>',
 supportTitle: "Soutenir ce Projet",
 supportSubtitle: "Si cet outil vous a aidé à optimiser votre portefeuille, soutenez notre travail!",
 btnDonate: "Offrez-moi un café",
@@ -661,7 +661,7 @@ function linkRangeAndText(rangeId, textId, isCurrency = false, isFloat = false) 
     if (isCurrency) {
       text.value = formatNumberWithCommas(val);
     } else {
-      text.value = isFloat ? val.toFixed(1) : val;
+      text.value = isFloat ? val.toFixed(2) : val;
     }
     recalculate();
   });
