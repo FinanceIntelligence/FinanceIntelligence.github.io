@@ -1,16 +1,371 @@
-// Referral Grid translation objects (English)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canada All-Account Growth & Leverage Sandbox</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Chart.js for data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+input[type="range"] {
+accent-color: #2563eb;
+}
+input[type="text"]::-webkit-outer-spin-button,
+input[type="text"]::-webkit-inner-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+</style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen py-10 px-4">
+
+<div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+
+<!-- Header Banner & Language Selector -->
+<div class="bg-gradient-to-r from-slate-800 to-indigo-950 text-white p-8 relative">
+<!-- Language Buttons -->
+<div class="absolute top-4 right-4 flex space-x-2 text-sm z-10">
+<button onclick="changeLanguage('en')" id="lang-en" class="px-2.5 py-1 text-xs font-bold rounded border transition-colors border-white bg-white text-slate-800">EN</button>
+<button onclick="changeLanguage('zh')" id="lang-zh" class="px-2.5 py-1 text-xs font-bold rounded border transition-colors border-indigo-400 hover:bg-white hover:text-slate-800">中文</button>
+<button onclick="changeLanguage('fr')" id="lang-fr" class="px-2.5 py-1 text-xs font-bold rounded border transition-colors border-indigo-400 hover:bg-white hover:text-slate-800">FR</button>
+</div>
+
+<div class="text-center mt-2">
+<h1 id="i18n-title" class="text-3xl font-extrabold mb-2 tracking-tight">Canada All-Account Growth & Leverage Sandbox</h1>
+<p id="i18n-subtitle" class="text-indigo-100 max-w-2xl mx-auto text-sm leading-relaxed">
+Compare Non-Registered, TFSA, and Margin tax-deductible accounts in real-time. Toggle asset visibility in the chart and select an account focus below to review specific tax implications.
+</p>
+</div>
+</div>
+
+<!-- Top Legend & Visibility Controls -->
+<div class="bg-slate-100 border-b border-gray-200 py-4 px-8">
+<div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+<span id="i18n-toggle-chart-lbl" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Chart Series Visibility:</span>
+<div class="flex flex-wrap gap-3">
+<!-- Non-Reg Visibility -->
+<label class="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm cursor-pointer select-none text-xs hover:bg-gray-50 transition-all">
+<input type="checkbox" id="chk-nonreg" checked onchange="toggleDataset(0)" class="w-4 h-4 rounded text-slate-500 focus:ring-slate-400 border-gray-300">
+<span class="text-slate-600 font-medium flex items-center">🌐 <span id="i18n-chk-lbl-nonreg" class="ml-1.5">Non-Reg</span></span>
+</label>
+
+<!-- TFSA Visibility -->
+<label class="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm cursor-pointer select-none text-xs hover:bg-gray-50 transition-all">
+<input type="checkbox" id="chk-tfsa" checked onchange="toggleDataset(1)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300">
+<span class="text-slate-600 font-medium flex items-center">🛡️ <span id="i18n-chk-lbl-tfsa" class="ml-1.5">TFSA</span></span>
+</label>
+
+<!-- Margin Visibility -->
+<label class="flex items-center space-x-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm cursor-pointer select-none text-xs hover:bg-gray-50 transition-all">
+<input type="checkbox" id="chk-margin" checked onchange="toggleDataset(2)" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300">
+<span class="text-slate-600 font-medium flex items-center">🚀 <span id="i18n-chk-lbl-margin" class="ml-1.5">Margin (Net)</span></span>
+</label>
+</div>
+</div>
+</div>
+
+<!-- Chart Section -->
+<div class="px-8 pt-6">
+<div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
+<div class="relative w-full h-80">
+<canvas id="growthChart"></canvas>
+</div>
+</div>
+</div>
+
+<!-- Main Content Area -->
+<div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+
+<!-- Left Side: Inputs -->
+<div class="space-y-6">
+<h2 id="i18n-section-params" class="text-xl font-bold text-gray-700 border-b pb-2">Adjust Parameters</h2>
+
+<!-- Initial Principal -->
+<div>
+<div class="flex justify-between items-center mb-1.5">
+<label id="i18n-label-principal" class="text-sm font-semibold text-gray-600">Initial Principal</label>
+<div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[140px]">
+<span class="text-gray-500 text-xs mr-1">$</span>
+<input type="text" id="input-principal" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="10,000">
+</div>
+</div>
+<input type="range" id="param-principal" min="1000" max="100000" step="1000" value="10000" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+</div>
+
+<!-- Monthly Contribution -->
+<div>
+<div class="flex justify-between items-center mb-1.5">
+<label id="i18n-label-monthly" class="text-sm font-semibold text-gray-600">Monthly Contribution</label>
+<div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[140px]">
+<span class="text-gray-500 text-xs mr-1">$</span>
+<input type="text" id="input-monthly" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="500">
+</div>
+</div>
+<input type="range" id="param-monthly" min="0" max="10000" step="100" value="500" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+</div>
+
+<!-- Expected Annual Return -->
+<div>
+<div class="flex justify-between items-center mb-1.5">
+<label id="i18n-label-return" class="text-sm font-semibold text-gray-600">Expected Annual Return</label>
+<div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
+<input type="number" id="input-return" step="0.1" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="8.0">
+<span class="text-gray-500 text-xs ml-1">%</span>
+</div>
+</div>
+<input type="range" id="param-return" min="1" max="25" step="0.5" value="8" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+</div>
+
+<!-- Years to Grow -->
+<div>
+<div class="flex justify-between items-center mb-1.5">
+<label id="i18n-label-years" class="text-sm font-semibold text-gray-600">Years to Grow</label>
+<div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
+<input type="number" id="input-years" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="20">
+<span id="lbl-years-unit" class="text-gray-500 text-xs ml-1">Years</span>
+</div>
+</div>
+<input type="range" id="param-years" min="1" max="50" step="1" value="20" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+</div>
+
+<h2 id="i18n-section-tax" class="text-xl font-bold text-gray-700 border-b pb-2 pt-4">CRA Leverage & Tax Parameters</h2>
+
+<!-- Leverage Ratio -->
+<div>
+<div class="flex justify-between items-center mb-1.5">
+<div>
+<label id="i18n-label-leverage" class="text-sm font-semibold text-gray-600">Margin Leverage Ratio</label>
+<span id="i18n-note-leverage" class="text-xs text-gray-400 block">(borrowed amount relative to own cash)</span>
+</div>
+<div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
+<input type="number" id="input-leverage" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="50">
+<span class="text-gray-500 text-xs ml-1">%</span>
+</div>
+</div>
+<input type="range" id="param-leverage" min="0" max="150" step="10" value="50" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+</div>
+
+<!-- Gross Margin Rate -->
+<div>
+<div class="flex justify-between items-center mb-1.5">
+<label id="i18n-label-gross" class="text-sm font-semibold text-gray-600">Broker Gross Margin Rate</label>
+<div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
+<input type="number" id="input-gross" step="0.01" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="3.95">
+<span class="text-gray-500 text-xs ml-1">%</span>
+</div>
+</div>
+<input type="range" id="param-gross" min="1" max="15" step="0.25" value="3.95" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+</div>
+
+<!-- Tax Mode Switcher (Toggle) -->
+<div class="bg-gray-100 p-1.5 rounded-lg flex space-x-1 mb-4">
+<button type="button" onclick="setTaxMode('auto')" id="btn-tax-auto" class="flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all bg-white text-blue-700 shadow-sm">
+⚡ <span id="i18n-tax-auto-btn">Estimate Tax (By Income)</span>
+</button>
+<button type="button" onclick="setTaxMode('manual')" id="btn-tax-manual" class="flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all text-gray-500 hover:text-gray-700">
+⚙️ <span id="i18n-tax-manual-btn">Manual Rate</span>
+</button>
+</div>
+
+<!-- Auto Calculation Block -->
+<div id="tax-area-auto" class="space-y-4 p-4 bg-blue-50/50 border border-blue-100 rounded-xl">
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label id="i18n-tax-prov" class="block text-xs font-semibold text-gray-600 mb-1">Province</label>
+<select id="tax-province" onchange="recalculate()" class="w-full bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm font-bold text-gray-700 focus:outline-none">
+<option value="ON" selected>Ontario (ON)</option>
+<option value="BC">British Columbia (BC)</option>
+<option value="QC">Quebec (QC)</option>
+<option value="AB">Alberta (AB)</option>
+</select>
+</div>
+<div>
+<label id="i18n-tax-income" class="block text-xs font-semibold text-gray-600 mb-1">Annual Taxable Income</label>
+<div class="flex items-center bg-white border border-gray-300 rounded-lg px-2 py-1.5">
+<span class="text-gray-500 text-xs mr-1">$</span>
+<input type="text" id="tax-income-input" class="w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="100,000">
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center pt-2 border-t border-blue-100/60 text-xs">
+<span id="i18n-calculated-tax-lbl" class="text-gray-500">Estimated Marginal Tax Rate:</span>
+<span class="font-extrabold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded text-sm" id="auto-tax-result">43.41%</span>
+</div>
+</div>
+
+<!-- Manual Calculation Block -->
+<div id="tax-area-manual" class="hidden space-y-4">
+<div>
+<div class="flex justify-between items-center mb-1.5">
+<div>
+<label id="i18n-label-tax" class="text-sm font-semibold text-gray-600">Marginal Tax Rate</label>
+<span id="i18n-note-tax" class="text-xs text-gray-400 block">(typically 30% - 43% in Ontario)</span>
+</div>
+<div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
+<input type="number" id="input-tax" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="35">
+<span class="text-gray-500 text-xs ml-1">%</span>
+</div>
+</div>
+<input type="range" id="param-tax" min="0" max="54" step="1" value="35" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+</div>
+</div>
+
+</div>
+
+<!-- Right Side: Dynamic Focused Results -->
+<div class="bg-slate-50 p-6 rounded-xl border border-gray-200 flex flex-col justify-between">
+<div>
+<h2 id="i18n-section-results" class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Analysis Hub</h2>
+
+<!-- Main Account Focus Switcher -->
+<p id="i18n-focus-prompt" class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Select Account Focus View:</p>
+<div class="bg-gray-200/80 p-1 rounded-lg flex space-x-1 mb-6">
+<button type="button" onclick="setAccountMode('nonreg')" id="btn-acc-nonreg" class="flex-1 text-center py-2 text-xs font-bold rounded-md transition-all text-gray-500 hover:text-slate-800">
+🌐 <span id="i18n-acc-nonreg">Non-Reg</span>
+</button>
+<button type="button" onclick="setAccountMode('tfsa')" id="btn-acc-tfsa" class="flex-1 text-center py-2 text-xs font-bold rounded-md transition-all text-gray-500 hover:text-slate-800">
+🛡️ <span>TFSA</span>
+</button>
+<button type="button" onclick="setAccountMode('leveraged')" id="btn-acc-leveraged" class="flex-1 text-center py-2 text-xs font-bold rounded-md transition-all bg-white text-indigo-800 shadow-sm">
+🚀 <span>Margin</span>
+</button>
+</div>
+
+<!-- Selected Account Card Display -->
+<div id="display-card-bg" class="mb-6 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl relative transition-all">
+<span id="display-card-title" class="text-xs font-bold text-indigo-600 uppercase tracking-wider block">Portfolio Net Value</span>
+<div class="text-3xl font-extrabold text-indigo-900 mt-1.5" id="display-card-value">$0 (0%)</div>
+<p id="display-card-note" class="text-xs text-slate-500 mt-2.5 leading-relaxed">...</p>
+</div>
+
+<!-- DYNAMIC SUB-RESULTS: Renders content according to selected Account Mode -->
+<div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+<h4 id="i18n-dynamic-metrics-title" class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 border-b pb-1.5">Focused Account Metrics</h4>
+
+<!-- Margin Specific Details -->
+<div id="section-metrics-margin" class="grid grid-cols-2 gap-4 text-xs">
+<div>
+<span id="i18n-met-netrate" class="text-slate-400 block font-medium">Net Annual Borrowing Cost</span>
+<span class="font-bold text-slate-700 text-sm" id="res-net-rate">0.00%</span>
+</div>
+<div>
+<span id="i18n-met-taxsaved" class="text-slate-400 block font-medium">Cumulative Tax Saved (CRA)</span>
+<span class="font-bold text-green-600 text-sm" id="res-tax-saved">$0</span>
+</div>
+</div>
+
+<!-- Non-Reg Specific Details -->
+<div id="section-metrics-nonreg" class="hidden grid grid-cols-2 gap-4 text-xs">
+<div>
+<span id="i18n-met-taxdrag" class="text-slate-400 block font-medium">Annual Tax-Drag Loss</span>
+<span class="font-bold text-amber-600 text-sm" id="res-tax-drag-rate">~1.50% / Year</span>
+</div>
+<div>
+<span id="i18n-met-cumdrag" class="text-slate-400 block font-medium">Cumulative Tax Drag Loss</span>
+<span class="font-bold text-red-600 text-sm" id="res-tax-drag-total">$0</span>
+</div>
+</div>
+
+<!-- TFSA Specific Details -->
+<div id="section-metrics-tfsa" class="hidden grid grid-cols-2 gap-4 text-xs">
+<div>
+<span id="i18n-met-tfsaroom" class="text-slate-400 block font-medium">Est. Contribution Room</span>
+<span class="font-bold text-indigo-600 text-sm" id="res-tfsa-room">$95,000+</span>
+</div>
+<div>
+<span id="i18n-met-tfsasaved" class="text-slate-400 block font-medium">Total Sheltered Returns</span>
+<span class="font-bold text-green-600 text-sm" id="res-tfsa-sheltered">$0</span>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- Affiliate / Promo Block -->
+<div class="mt-8 pt-4 border-t border-gray-200">
+<div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100 text-xs">
+<p id="i18n-affiliate-title" class="text-indigo-800 font-semibold mb-2">💡 Optimize Borrowing Costs with Wealthsimple:</p>
+<div id="i18n-affiliate-body" class="space-y-2 text-indigo-600">
+<!-- Dynamic Content Rendered by JS -->
+</div>
+</div>
+<p id="i18n-disclaimer" class="text-[10px] text-gray-400 leading-relaxed mt-2.5">
+* Disclaimer: This tool is for educational purposes only and does not constitute financial or tax advice. Investing on margin involves risk.
+</p>
+</div>
+</div>
+
+</div>
+
+<!-- Creator Support & Referral Grid Container -->
+<div class="bg-gray-50 border-t border-gray-200 px-8 py-8">
+  <div class="max-w-5xl mx-auto">
+    <!-- Top Support Bar -->
+    <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-gray-200/80">
+      <div class="text-center md:text-left md:max-w-[70%]">
+        <h4 id="i18n-support-title" class="font-bold text-gray-800 text-base">Support the Development of This Tool</h4>
+        <p id="i18n-support-subtitle" class="text-xs text-gray-500 mt-1 leading-relaxed">
+          I build and maintain this sandbox in my spare time to help Canadian investors visualize tax and leverage strategies. If this tool saved you hours of Excel math, consider buying me a coffee or using my product referral links below!
+        </p>
+      </div>
+      <div class="flex-shrink-0">
+        <a href="https://buymeacoffee.com/" target="_blank" id="i18n-btn-donate" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold py-2.5 px-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center">
+          ☕ <span class="ml-2">Buy Me a Coffee</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Referral Grid Section -->
+    <div class="pt-6">
+      <h5 id="i18n-grid-title" class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">My Financial Product Referrals</h5>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="referrals-container">
+        <!-- Dynmically Rendered by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Core Calculator Engine & I18n -->
+<script>
+const translations = {
+en: {
+title: "Canada All-Account Growth & Leverage Sandbox",
+subtitle: "Compare Non-Registered, TFSA, and Margin tax-deductible accounts in real-time. Toggle asset visibility in the chart and select an account focus below to review specific tax implications.",
+sectionParams: "Adjust Parameters",
+labelPrincipal: "Initial Principal",
+labelMonthly: "Monthly Contribution",
+labelReturn: "Expected Annual Return",
+labelYears: "Years to Grow",
+yearsUnit: "Years",
+sectionTax: "CRA Leverage & Tax Parameters",
+labelLeverage: "Margin Leverage Ratio",
+noteLeverage: "(borrowed amount relative to own cash)",
+labelGross: "Broker Gross Margin Rate",
+labelTax: "Marginal Tax Rate",
+noteTax: "(typically 30% - 43% in Ontario)",
+sectionResults: "Analysis Hub",
+focusPrompt: "Select Account Focus View:",
+disclaimer: "* Disclaimer: This tool is for educational purposes only and does not constitute financial or tax advice. Investing on margin involves risk.",
+affiliateTitle: "💡 Optimize Borrowing Costs with Wealthsimple:",
+affiliateBody: `
+<p><strong>1. Low-Cost Borrowing:</strong> Wealthsimple offers industry-leading margin rates in Canada <strong>as low as 3.95%</strong> (CAD) for eligible clients. <a href="https://www.wealthsimple.com/en-ca/margin" target="_blank" rel="noopener noreferrer" class="text-indigo-700 underline font-bold hover:text-indigo-900">Read Wealthsimple's Margin details on their website ↗</a></p>
+<p class="mt-1.5"><strong>2. Special Welcome Offer:</strong> <a href="https://wealthsimple.com/invite/SR07QA" target="_blank" rel="noopener noreferrer" class="text-indigo-700 underline font-bold hover:text-indigo-900">Sign up or open a Margin account using my referral link and <strong>Get $25 (terms apply)</strong> ↗</a> when you fund your account with at least $100 within 30 days.</p>
+`,
+supportTitle: "Support the Development of This Tool",
+supportSubtitle: "I build and maintain this sandbox in my spare time to help Canadian investors visualize complex tax and leverage strategies. If this tool saved you hours of Excel math, consider buying me a coffee or using my curated financial referral links below!",
+btnDonate: "Buy Me a Coffee",
+gridTitle: "My Curated Financial Referrals",
 refList: [
   {
     name: "Wealthsimple",
     desc: "Canada's leading low-fee investing platform featuring automated indexing, active trading, and high-yield cash sweep accounts.",
     benefit: "Get $25 cash bonus when you open and fund an account with at least $100.",
     link: "https://wealthsimple.com/invite/SR07QA"
-  },
-  {
-    name: "Rakuten",
-    desc: "Canada's top cashback platform. Earn cash back on your online shopping at hundreds of major retailers, easily stacking with credit card rewards.",
-    benefit: "Get a $30 cash bonus after making your first qualifying purchase.",
-    link: "#" // <--- 替换为你的真实推荐链接
   },
   {
     name: "EQ Bank",
@@ -43,3 +398,683 @@ refList: [
     link: "#"
   }
 ],
+taxAutoBtn: "Estimate Tax (By Income)",
+taxManualBtn: "Manual Rate",
+taxProv: "Province / Territory",
+taxIncome: "Annual Taxable Income",
+calculatedTaxLbl: "Estimated Marginal Tax Rate:",
+toggleChartLbl: "Chart Series Visibility:",
+lblTblNonreg: "Non-Reg Portfolio",
+lblTblTfsa: "TFSA Portfolio",
+lblTblMargin: "Margin Portfolio (Net)",
+noteNonRegCard: "Portfolio grown in a standard taxable account. Drag factors in constant capital gains tax and dividend tax friction (~1.5% annual yield loss).",
+noteTfsaCard: "Completely sheltered from CRA tax. The final value shown is 100% tax-free capital. (Subject to individual contribution limits).",
+noteLeveragedCard: "Net portfolio value using tax-deductible margin leverage. Gross borrowing costs are heavily offset by CRA tax refunds.",
+dynamicMetricsTitle: "Focused Account Metrics",
+metNetrate: "Net Annual Borrowing Cost",
+metTaxsaved: "Cumulative Tax Saved (CRA)",
+metTaxdrag: "Annual Tax-Drag Loss",
+metCumdrag: "Cumulative Tax Drag Loss",
+metTfsaroom: "Est. Contribution Room",
+metTfsasaved: "Total Sheltered Returns"
+},
+zh: {
+title: "🇨🇦 加拿大个人理财全账户增长与杠杆抵税沙盒",
+subtitle: "实时对比非注册（Non-Reg）、免税（TFSA）和杠杆（Margin）账户的资产增长轨迹。顶置组件一键控制图表折线展示，切换主视角即可直观探查该账户的核心底层税务指标。",
+sectionParams: "调整投资参数",
+labelPrincipal: "初始本金",
+labelMonthly: "每月定投金额",
+labelReturn: "预期年化收益率",
+labelYears: "投资年限",
+yearsUnit: "年",
+sectionTax: "CRA 杠杆抵税参数",
+labelLeverage: "Margin 杠杆比例",
+noteLeverage: "（借款占自有现金的比例）",
+labelGross: "券商 Margin 借贷利率",
+labelTax: "个人边际税率",
+noteTax: "（安省中产阶级通常在 30% - 43% 之间）",
+sectionResults: "全景观测中心",
+focusPrompt: "选择核心分析账户主视角：",
+disclaimer: "* 免责声明：本工具仅供学习和测算娱乐，不构成任何投资或税务建议。借贷投资存在风险，请根据个人承受能力合理使用杠杆。",
+affiliateTitle: "💡 优化借贷成本 (Wealthsimple 专区)：",
+affiliateBody: `
+<p><strong>1. 低成本借贷服务：</strong>Wealthsimple 在加拿大提供<strong>低至 3.95%</strong> (加元) 的行业领先 Margin 借贷利率。<a href="https://www.wealthsimple.com/en-ca/margin" target="_blank" rel="noopener noreferrer" class="text-indigo-700 underline font-bold hover:text-indigo-900">点击前往 Wealthsimple 官网阅读 Margin服务详情 ↗</a></p>
+<p class="mt-1.5"><strong>2. 专属新户开卡礼遇：</strong><a href="https://wealthsimple.com/invite/SR07QA" target="_blank" rel="noopener noreferrer" class="text-indigo-700 underline font-bold hover:text-indigo-900">通过我的专属推荐链接注册或开户 <strong>可获得 $25 奖励（需符合条款）</strong> ↗</a>。您只需在开户后 30天内注资满 $100 即可解锁此福利。</p>
+`,
+supportTitle: "支持本工具的后续开发与维护",
+supportSubtitle: "我在业余时间开发并维护这个沙盒，致力于帮助加拿大华人投资者轻松理清复杂的复利杠杆与税务抵扣。如果这个工具曾帮您省去数小时繁琐的 Excel 公式计算，请考虑请作者喝杯咖啡，或使用下方我精心挑选的加拿大常用高福利金融开户链接支持我！",
+btnDonate: "请作者喝杯咖啡",
+gridTitle: "加拿大精选高福利开户返现链接",
+refList: [
+  {
+    name: "Wealthsimple",
+    desc: "加拿大目前最火爆的全能券商。提供完全零佣金股票/ETF交易、超高息活期余额，以及行业极具优势的抵税 Margin 杠杆账户。",
+    benefit: "使用专属链接开户并在30天内注资满 $100，立享 $25 现金奖励。",
+    link: "https://wealthsimple.com/invite/SR07QA"
+  },
+  {
+    name: "EQ Bank",
+    desc: "加拿大高息数字银行标杆。无年费、无最低余额限制，提供业内领先的活期利率，且支持全球ATM免费取现及超低汇率转账。",
+    benefit: "使用专属链接开户并存入首笔资金，即可获得最高 $20 现金奖励。",
+    link: "#"
+  },
+  {
+    name: "Neo Financial",
+    desc: "新一代智能信用与储蓄平台。与加拿大数千家本地商户深度合作，提供高额即时刷卡消费返现（Cashback）与极具竞争力的储蓄利率。",
+    benefit: "通过推荐链接开卡首刷或存款，即可获得 $25 到 $50 不等的新人礼包。",
+    link: "#"
+  },
+  {
+    name: "Tangerine",
+    desc: "丰业银行（Scotiabank）旗下的老牌免年费直销银行。提供终身免年费且可自选高返现类别的信用卡，支持免费使用 Scotiabank 全网 ATM。",
+    benefit: "在开户时填写专属 Orange Key 推荐码并满足存款要求，立得 $50 现金红利。",
+    link: "#"
+  },
+  {
+    name: "Simplii Financial",
+    desc: "帝国商业银行（CIBC）旗下知名直销银行。提供终身免年费支票账户、无限次免费电子转账，以及极具性价比的跨境汇款服务。",
+    benefit: "使用链接开通免费账户并完成指定日常任务，立享 $50 现金返还奖励。",
+    link: "#"
+  },
+  {
+    name: "Chexy",
+    desc: "加拿大房租刷卡利器。将房租账单与信用卡绑定，付房租的同时轻松刷满新卡开卡礼，坐收大笔信用卡积分与返现奖励。",
+    benefit: "通过专属链接注册，首笔房租支付可获得手续费减免或额外积分积分加赠。",
+    link: "#"
+  }
+],
+taxAutoBtn: "按收入智能测算税率",
+taxManualBtn: "手动输入税率",
+taxProv: "居住省份",
+taxIncome: "年应纳税收入 (Taxable Income)",
+calculatedTaxLbl: "估算出的边际税率 (Marginal Tax Rate):",
+toggleChartLbl: "图表曲线显示控制（勾选生效）：",
+lblTblNonreg: "非注册账户资产",
+lblTblTfsa: "TFSA 账户资产",
+lblTblMargin: "Margin 账户净值",
+noteNonRegCard: "在普通的应税账户中进行投资。已在此处算入年均 1.5% 的资本利得与股息纳税损耗（Tax Drag）。",
+noteTfsaCard: "完全免征联邦及省所得税、资本利得税 and 股息税。最终显示的全部为纯手得资金（请注意保持在额度上限内）。",
+noteLeveragedCard: "在非注册账户中利用 Margin 放大本金并每年申请 CRA 利息抵税后的净资产。税收退还大幅降低了实际借贷成本。",
+dynamicMetricsTitle: "当前账户重点税务指标追踪",
+metNetrate: "实际借款年化成本 (税后)",
+metTaxsaved: "累计向 CRA 申请抵税 (节省本金)",
+metTaxdrag: "预估年均税务磨损率",
+metCumdrag: "累计损失的潜在利得 (Tax Drag)",
+metTfsaroom: "预估可使用额度空间",
+metTfsasaved: "免税政策帮您多赚了"
+},
+fr: {
+title: "🇨🇦 Bac à Sable de Croissance et Effet de Levier pour Comptes Canadiens",
+subtitle: "Comparez les comptes Non-Enregistrés, CELI, et Marge déductible d'impôt en temps réel. Activez la visibilité des séries sur le graphique et sélectionnez une vue ci-dessous pour analyser les impacts fiscaux.",
+sectionParams: "Ajuster les Paramètres",
+labelPrincipal: "Principal Initial",
+labelMonthly: "Contribution Mensuelle",
+labelReturn: "Rendement Annuel Prévu",
+labelYears: "Années de Croissance",
+yearsUnit: "Ans",
+sectionTax: "Paramètres d'effet de levier et impôt de l'ARC",
+labelLeverage: "Ratio d'effet de levier de marge",
+noteLeverage: "(montant emprunté par rapport aux liquidités)",
+labelGross: "Taux de marge brut du courtier",
+labelTax: "Taux marginal d'imposition",
+noteTax: "(généralement 30% - 43% in Ontario)",
+sectionResults: "Centre d'analyse",
+focusPrompt: "Sélectionnez le type de compte principal à analyser:",
+disclaimer: "* Avis de non-responsabilité: Cet outil est à but éducatif uniquement et ne constitue pas un conseil financier ou fiscal.",
+affiliateTitle: "💡 Optimisez vos coûts avec Wealthsimple :",
+affiliateBody: `
+<p><strong>1. Emprunt à faible coût :</strong> Wealthsimple propose des taux de marge <strong>aussi bas que 3,95%</strong> (CAD) au Canada pour les clients admissibles. <a href="https://www.wealthsimple.com/fr-ca/margin" target="_blank" rel="noopener noreferrer" class="text-indigo-700 underline font-bold hover:text-indigo-900">Consultez les détails sur la marge sur le site de Wealthsimple ↗</a></p>
+<p class="mt-1.5"><strong>2. Offre de bienvenue spéciale :</strong> <a href="https://wealthsimple.com/invite/SR07QA" target="_blank" rel="noopener noreferrer" class="text-indigo-700 underline font-bold hover:text-indigo-900">Inscrivez-vous en utilisant mon lien de parrainage et <strong>obtenez 25 $ (des conditions s'appliquent)</strong> ↗</a> lorsque vous déposez au moins 100 $ dans les 30 jours.</p>
+`,
+supportTitle: "Soutenez le développement de cet outil",
+supportSubtitle: "Je développe et maintiens cet outil durant mon temps libre pour aider les investisseurs canadiens à visualiser les stratégies de levier. Si cet outil vous a fait gagner du temps, offrez-moi un café ou utilisez mes liens de parrainage financier ci-dessous pour me soutenir !",
+btnDonate: "Offrez-moi un café",
+gridTitle: "Mes liens de parrainage pour produits financiers",
+refList: [
+  {
+    name: "Wealthsimple",
+    desc: "Le courtier leader au Canada avec zéro frais de transaction, un taux d'épargne ultra compétitif, et un compte sur marge idéal pour l'effet de levier.",
+    benefit: "Obtenez un bonus de 25 $ en ouvrant et finançant votre compte avec 100 $.",
+    link: "https://wealthsimple.com/invite/SR07QA"
+  },
+  {
+    name: "Banque EQ",
+    desc: "L'une des meilleures banques numériques au Canada, offrant des taux d'intérêt élevés sans frais mensuels et des retraits d'argent gratuits aux guichets.",
+    benefit: "Obtenez jusqu'à 20 $ de bonus en argent selon votre dépôt initial.",
+    link: "#"
+  },
+  {
+    name: "Neo Financial",
+    desc: "Une plateforme financière moderne offrant d'excellents taux de remise en argent instantanée chez des milliers de commerçants partenaires.",
+    benefit: "Obtenez un bonus de bienvenue de 25 $ sur vos premières transactions par carte.",
+    link: "#"
+  },
+  {
+    name: "Tangerine",
+    desc: "Banque en ligne sans frais de la Banque Scotia, proposant des cartes de crédit populaires avec remises personnalisables et des comptes épargne automatisés.",
+    benefit: "Obtenez 50 $ de bonus en argent lors de l'ouverture d'un compte avec une clé orange.",
+    link: "#"
+  },
+  {
+    name: "Simplii Financial",
+    desc: "La marque bancaire directe de la CIBC offrant des comptes chèques gratuits sans frais, des virements Interac illimités et des transferts mondiaux simplifiés.",
+    benefit: "Obtenez 50 $ de prime de bienvenue en ouvrant un compte chèques gratuit.",
+    link: "#"
+  },
+  {
+    name: "Chexy",
+    desc: "Une plateforme révolutionnaire qui vous permet de payer votre loyer mensuel canadien avec votre carte de crédit préférée pour accumuler des récompenses.",
+    benefit: "Obtenez une réduction de frais ou des points bonus sur votre premier paiement de loyer.",
+    link: "#"
+  }
+],
+taxAutoBtn: "Estimer l'impôt (Par Revenu)",
+taxManualBtn: "Taux Manuel",
+taxProv: "Province / Territoire",
+taxIncome: "Revenu Imposable Annuel",
+calculatedTaxLbl: "Taux marginal d'imposition estimé:",
+toggleChartLbl: "Visibilité des séries de graphiques:",
+lblTblNonreg: "Portefeuille Non-Reg",
+lblTblTfsa: "Portefeuille CELI",
+lblTblMargin: "Portefeuille Marge (Net)",
+noteNonRegCard: "Portefeuille dans un compte imposable ordinaire. Les calculs intègrent une traînée fiscale annuelle de ~1,5% (gains et dividendes).",
+noteTfsaCard: "Complètement à l'abri de l'impôt de l'ARC. Le montant final affiché est 100% libre d'impôt.",
+noteLeveragedCard: "Valeur nette du portefeuille avec effet de levier de marge déductible d'impôt. Les coûts d'emprunt bruts sont compensés par les remboursements fiscaux de l'ARC.",
+dynamicMetricsTitle: "Indicateurs fiscaux ciblés",
+metNetrate: "Coût net d'emprunt annuel",
+metTaxsaved: "Économie d'impôt cumulée (ARC)",
+metTaxdrag: "Perte annuelle par traînée fiscale",
+metCumdrag: "Perte cumulative par traînée fiscale",
+metTfsaroom: "Espace de contribution estimé",
+metTfsasaved: "Rendements totaux abrités"
+}
+};
+
+let currentLang = 'en';
+let currentAccountMode = 'leveraged'; // nonreg, tfsa, leveraged
+let currentTaxMode = 'auto'; // auto, manual
+let chart = null;
+
+// --- Helper: Parsing and Formatting Helper Functions for Thousands Separator ---
+function parseFormattedNumber(val) {
+  if (typeof val === 'string') {
+    return parseFloat(val.replace(/,/g, '')) || 0;
+  }
+  return parseFloat(val) || 0;
+}
+
+function formatNumberWithCommas(val) {
+  return Math.round(val).toLocaleString('en-US');
+}
+
+// Setup format-on-blur and clean-on-focus event listeners for text-based numeric inputs
+function setupNumericInputFormatting(inputId, rangeId, fallbackValue) {
+  const el = document.getElementById(inputId);
+  const slider = document.getElementById(rangeId);
+
+  el.addEventListener('focus', function() {
+    const rawVal = parseFormattedNumber(this.value);
+    this.value = rawVal > 0 ? rawVal : '';
+  });
+
+  el.addEventListener('blur', function() {
+    let parsedVal = parseFormattedNumber(this.value);
+    if (isNaN(parsedVal) || parsedVal < 0) parsedVal = fallbackValue;
+    this.value = formatNumberWithCommas(parsedVal);
+    if (slider) {
+      slider.value = parsedVal;
+    }
+    recalculate();
+  });
+
+  el.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      this.blur();
+    }
+  });
+}
+
+// --- Simulated Ontario/Canada Progressive Marginal Tax Bracket Estimates (2026 combined) ---
+function getMarginalTaxRate(province, income) {
+  if (currentTaxMode === 'manual') {
+    return parseFloat(document.getElementById('input-tax').value) / 100;
+  }
+
+  if (province === 'ON') {
+    if (income <= 51000) return 0.2005;
+    if (income <= 103000) return 0.2965;
+    if (income <= 150000) return 0.4341;
+    if (income <= 220000) return 0.4819;
+    return 0.5353;
+  } else if (province === 'BC') {
+    if (income <= 47000) return 0.2006;
+    if (income <= 95000) return 0.2820;
+    if (income <= 125000) return 0.3829;
+    if (income <= 172000) return 0.4370;
+    return 0.5350;
+  } else if (province === 'QC') {
+    if (income <= 50000) return 0.2653;
+    if (income <= 100000) return 0.3712;
+    if (income <= 120000) return 0.4613;
+    return 0.5331;
+  } else { // AB
+    if (income <= 142000) return 0.3050;
+    if (income <= 170000) return 0.3600;
+    if (income <= 227000) return 0.4200;
+    return 0.4800;
+  }
+}
+
+// --- Dynamic Referral Render Engine ---
+function renderReferralGrid() {
+  const container = document.getElementById('referrals-container');
+  container.innerHTML = "";
+  
+  const trans = translations[currentLang];
+  
+  trans.refList.forEach(item => {
+    const card = document.createElement('div');
+    card.className = "bg-white p-4 rounded-xl border border-gray-200/80 hover:border-indigo-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between";
+    
+    card.innerHTML = `
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-bold text-slate-800 text-sm">${item.name}</span>
+          <span class="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-100">PROMO</span>
+        </div>
+        <p class="text-[11px] text-gray-500 leading-relaxed mb-3">${item.desc}</p>
+      </div>
+      <div class="mt-3 pt-3 border-t border-dashed border-gray-100">
+        <p class="text-[11px] text-emerald-600 font-semibold mb-2.5">🎁 ${item.benefit}</p>
+        <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="block text-center text-xs font-bold text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100/60 border border-indigo-100 py-1.5 rounded-lg transition-colors">
+          ${currentLang === 'zh' ? '使用专属链接开户 ↗' : (currentLang === 'fr' ? 'Utiliser le lien ↗' : 'Use Referral Link ↗')}
+        </a>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function changeLanguage(lang) {
+  currentLang = lang;
+
+  // Highlight Selected Button
+  ['lang-en', 'lang-zh', 'lang-fr'].forEach(id => {
+    const btn = document.getElementById(id);
+    btn.className = "px-2.5 py-1 text-xs font-bold rounded border transition-colors border-indigo-400 hover:bg-white hover:text-slate-800";
+  });
+  const activeBtn = document.getElementById(`lang-${lang}`);
+  activeBtn.className = "px-2.5 py-1 text-xs font-bold rounded border transition-colors border-white bg-white text-slate-800";
+
+  // Translate static DOM keys
+  const trans = translations[lang];
+  document.getElementById('i18n-title').innerText = trans.title;
+  document.getElementById('i18n-subtitle').innerText = trans.subtitle;
+  document.getElementById('i18n-section-params').innerText = trans.sectionParams;
+  document.getElementById('i18n-label-principal').innerText = trans.labelPrincipal;
+  document.getElementById('i18n-label-monthly').innerText = trans.labelMonthly;
+  document.getElementById('i18n-label-return').innerText = trans.labelReturn;
+  document.getElementById('i18n-label-years').innerText = trans.labelYears;
+  document.getElementById('lbl-years-unit').innerText = trans.yearsUnit;
+  document.getElementById('i18n-section-tax').innerText = trans.sectionTax;
+  document.getElementById('i18n-label-leverage').innerText = trans.labelLeverage;
+  document.getElementById('i18n-note-leverage').innerText = trans.noteLeverage;
+  document.getElementById('i18n-label-gross').innerText = trans.labelGross;
+  document.getElementById('i18n-label-tax').innerText = trans.labelTax;
+  document.getElementById('i18n-note-tax').innerText = trans.noteTax;
+  document.getElementById('i18n-section-results').innerText = trans.sectionResults;
+  document.getElementById('i18n-focus-prompt').innerText = trans.focusPrompt;
+  document.getElementById('i18n-disclaimer').innerText = trans.disclaimer;
+  document.getElementById('i18n-affiliate-title').innerText = trans.affiliateTitle;
+  document.getElementById('i18n-affiliate-body').innerHTML = trans.affiliateBody;
+  
+  // Update support banner translation
+  document.getElementById('i18n-support-title').innerText = trans.supportTitle;
+  document.getElementById('i18n-support-subtitle').innerText = trans.supportSubtitle;
+  document.getElementById('i18n-btn-donate').innerHTML = `☕ <span class="ml-2">${trans.btnDonate}</span>`;
+  document.getElementById('i18n-grid-title').innerText = trans.gridTitle;
+
+  document.getElementById('i18n-tax-auto-btn').innerText = trans.taxAutoBtn;
+  document.getElementById('i18n-tax-manual-btn').innerText = trans.taxManualBtn;
+  document.getElementById('i18n-tax-prov').innerText = trans.taxProv;
+  document.getElementById('i18n-tax-income').innerText = trans.taxIncome;
+  document.getElementById('i18n-calculated-tax-lbl').innerText = trans.calculatedTaxLbl;
+  document.getElementById('i18n-toggle-chart-lbl').innerText = trans.toggleChartLbl;
+  document.getElementById('i18n-dynamic-metrics-title').innerText = trans.dynamicMetricsTitle;
+
+  document.getElementById('i18n-chk-lbl-nonreg').innerText = lang === 'zh' ? '非注册账户' : (lang === 'fr' ? 'Non-Reg' : 'Non-Reg');
+  document.getElementById('i18n-chk-lbl-tfsa').innerText = lang === 'zh' ? 'TFSA 账户' : 'TFSA';
+  document.getElementById('i18n-chk-lbl-margin').innerText = lang === 'zh' ? 'Margin 账户(净值)' : (lang === 'fr' ? 'Marge (Net)' : 'Margin (Net)');
+
+  document.getElementById('i18n-acc-nonreg').innerText = "Non-Reg";
+
+  document.getElementById('i18n-met-netrate').innerText = trans.metNetrate;
+  document.getElementById('i18n-met-taxsaved').innerText = trans.metTaxsaved;
+  document.getElementById('i18n-met-taxdrag').innerText = trans.metTaxdrag;
+  document.getElementById('i18n-met-cumdrag').innerText = trans.metCumdrag;
+  document.getElementById('i18n-met-tfsaroom').innerText = trans.metTfsaroom;
+  document.getElementById('i18n-met-tfsasaved').innerText = trans.metTfsasaved;
+
+  // Render dynamic referral elements
+  renderReferralGrid();
+
+  recalculate();
+}
+
+function setTaxMode(mode) {
+  currentTaxMode = mode;
+  const autoBtn = document.getElementById('btn-tax-auto');
+  const manualBtn = document.getElementById('btn-tax-manual');
+  const autoArea = document.getElementById('tax-area-auto');
+  const manualArea = document.getElementById('tax-area-manual');
+
+  if (mode === 'auto') {
+    autoBtn.className = "flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all bg-white text-blue-700 shadow-sm";
+    manualBtn.className = "flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all text-gray-500 hover:text-gray-700";
+    autoArea.classList.remove('hidden');
+    manualArea.classList.add('hidden');
+  } else {
+    manualBtn.className = "flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all bg-white text-blue-700 shadow-sm";
+    autoBtn.className = "flex-1 text-center py-1.5 text-xs font-bold rounded-md transition-all text-gray-500 hover:text-gray-700";
+    manualArea.classList.remove('hidden');
+    autoArea.classList.add('hidden');
+  }
+  recalculate();
+}
+
+function setAccountMode(mode) {
+  currentAccountMode = mode;
+
+  // Tab Highlights
+  const tabs = {
+    nonreg: document.getElementById('btn-acc-nonreg'),
+    tfsa: document.getElementById('btn-acc-tfsa'),
+    leveraged: document.getElementById('btn-acc-leveraged')
+  };
+
+  Object.keys(tabs).forEach(k => {
+    if (k === mode) {
+      tabs[k].className = "flex-1 text-center py-2 text-xs font-bold rounded-md transition-all bg-white text-indigo-800 shadow-sm";
+    } else {
+      tabs[k].className = "flex-1 text-center py-2 text-xs font-bold rounded-md transition-all text-gray-500 hover:text-slate-800";
+    }
+  });
+
+  // Dynamic Sub-metrics Area show/hide
+  document.getElementById('section-metrics-margin').classList.add('hidden');
+  document.getElementById('section-metrics-nonreg').classList.add('hidden');
+  document.getElementById('section-metrics-tfsa').classList.add('hidden');
+
+  if (mode === 'leveraged') {
+    document.getElementById('section-metrics-margin').classList.remove('hidden');
+  } else if (mode === 'nonreg') {
+    document.getElementById('section-metrics-nonreg').classList.remove('hidden');
+  } else {
+    document.getElementById('section-metrics-tfsa').classList.remove('hidden');
+  }
+
+  recalculate();
+}
+
+function toggleDataset(index) {
+  const meta = chart.getDatasetMeta(index);
+  meta.hidden = meta.hidden === null ? !chart.data.datasets[index].hidden : null;
+  chart.update();
+}
+
+// --- Sync Inputs (Ranges and Textboxes) ---
+function linkRangeAndText(rangeId, textId, isCurrency = false, isFloat = false) {
+  const range = document.getElementById(rangeId);
+  const text = document.getElementById(textId);
+
+  range.addEventListener('input', function() {
+    let val = parseFloat(this.value);
+    if (isCurrency) {
+      text.value = formatNumberWithCommas(val);
+    } else {
+      text.value = isFloat ? val.toFixed(2) : val;
+    }
+    recalculate();
+  });
+
+  text.addEventListener('input', function() {
+    let val = parseFormattedNumber(this.value);
+    if (!isNaN(val)) {
+      range.value = val;
+      recalculate();
+    }
+  });
+}
+
+// --- Main Mathematical Engine ---
+function recalculate() {
+  const principal = parseFormattedNumber(document.getElementById('input-principal').value);
+  const monthly = parseFormattedNumber(document.getElementById('input-monthly').value);
+  const returnRate = parseFloat(document.getElementById('input-return').value) / 100;
+  const years = parseInt(document.getElementById('input-years').value) || 1;
+  const leverageRatio = parseFloat(document.getElementById('input-leverage').value) / 100;
+  const grossMarginRate = parseFloat(document.getElementById('input-gross').value) / 100;
+
+  const province = document.getElementById('tax-province').value;
+  const income = parseFormattedNumber(document.getElementById('tax-income-input').value);
+  const taxRate = getMarginalTaxRate(province, income);
+
+  // Update UI tax indicator
+  if (currentTaxMode === 'auto') {
+    document.getElementById('auto-tax-result').innerText = (taxRate * 100).toFixed(2) + '%';
+  }
+
+  // Margin calculation elements
+  const borrowedAmount = principal * leverageRatio;
+  const netMarginRate = grossMarginRate * (1 - taxRate);
+
+  // Generate Year-by-Year Growth Datasets
+  let yearsArray = Array.from({length: years + 1}, (_, i) => i);
+  let nonRegData = [];
+  let tfsaData = [];
+  let marginNetData = [];
+
+  // Tax drag for Non-Registered accounts
+  const taxDrag = 0.015;
+
+  // Set year 0 starting values
+  nonRegData.push(principal);
+  tfsaData.push(principal);
+  marginNetData.push(principal);
+
+  let currentNonReg = principal;
+  let currentTfsa = principal;
+
+  // Margin Leveraged Portfolio Tracker variables
+  let currentLeveragedGross = principal + borrowedAmount;
+  let accumulatedDebt = borrowedAmount;
+  let cumulativeTaxSaved = 0;
+
+  for (let y = 1; y <= years; y++) {
+    // 1. Non-Reg Compound calculation with regular monthly additions
+    for (let m = 0; m < 12; m++) {
+      currentNonReg = currentNonReg * (1 + (returnRate - taxDrag) / 12) + monthly;
+    }
+    nonRegData.push(currentNonReg);
+
+    // 2. TFSA compounding
+    for (let m = 0; m < 12; m++) {
+      currentTfsa = currentTfsa * (1 + returnRate / 12) + monthly;
+    }
+    tfsaData.push(currentTfsa);
+
+    // 3. Margin account compounding
+    for (let m = 0; m < 12; m++) {
+      currentLeveragedGross = currentLeveragedGross * (1 + returnRate / 12) + monthly;
+    }
+
+    // Apply net out-of-pocket leverage interest calculated yearly
+    const annualInterestPaid = accumulatedDebt * grossMarginRate;
+    const taxSavingThisYear = annualInterestPaid * taxRate;
+    cumulativeTaxSaved += taxSavingThisYear;
+
+    // Adjust debt balance or pay out interest from returns
+    const netInterestPaid = annualInterestPaid - taxSavingThisYear;
+    currentLeveragedGross -= netInterestPaid;
+
+    const netEquityValue = Math.max(0, currentLeveragedGross - accumulatedDebt);
+    marginNetData.push(netEquityValue);
+  }
+
+  // Render Sub-Metrics on the Right Focused Card
+  const activeFocusValue = marginNetData[years];
+  const activeTfsaValue = tfsaData[years];
+  const activeNonRegValue = nonRegData[years];
+
+  const trans = translations[currentLang];
+  const cardValEl = document.getElementById('display-card-value');
+  const cardTitleEl = document.getElementById('display-card-title');
+  const cardNoteEl = document.getElementById('display-card-note');
+  const cardBg = document.getElementById('display-card-bg');
+
+  if (currentAccountMode === 'leveraged') {
+    cardBg.className = "mb-6 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl relative transition-all";
+    cardTitleEl.innerText = trans.lblTblMargin;
+    cardValEl.innerText = `$${formatNumberWithCommas(activeFocusValue)}`;
+    cardNoteEl.innerText = trans.noteLeveragedCard;
+
+    // Sub-metrics updating
+    document.getElementById('res-net-rate').innerText = (netMarginRate * 100).toFixed(2) + '%';
+    document.getElementById('res-tax-saved').innerText = `$${formatNumberWithCommas(cumulativeTaxSaved)}`;
+  } else if (currentAccountMode === 'nonreg') {
+    cardBg.className = "mb-6 p-5 bg-gradient-to-br from-slate-50 to-gray-100 border border-slate-200 rounded-xl relative transition-all";
+    cardTitleEl.innerText = trans.lblTblNonreg;
+    cardValEl.innerText = `$${formatNumberWithCommas(activeNonRegValue)}`;
+    cardNoteEl.innerText = trans.noteNonRegCard;
+
+    // Tax drag calculations
+    const grossNoDrag = tfsaData[years];
+    const lostToDrag = grossNoDrag - activeNonRegValue;
+    document.getElementById('res-tax-drag-total').innerText = `$${formatNumberWithCommas(lostToDrag)}`;
+  } else {
+    cardBg.className = "mb-6 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl relative transition-all";
+    cardTitleEl.innerText = trans.lblTblTfsa;
+    cardValEl.innerText = `$${formatNumberWithCommas(activeTfsaValue)}`;
+    cardNoteEl.innerText = trans.noteTfsaCard;
+
+    // Sheltered value relative to Non-Reg
+    const savedImposition = activeTfsaValue - activeNonRegValue;
+    document.getElementById('res-tfsa-sheltered').innerText = `$${formatNumberWithCommas(savedImposition)}`;
+  }
+
+  // Update Chart.js Data
+  if (chart) {
+    chart.data.labels = yearsArray;
+    chart.data.datasets[0].data = nonRegData;
+    chart.data.datasets[0].label = trans.lblTblNonreg;
+    chart.data.datasets[1].data = tfsaData;
+    chart.data.datasets[1].label = trans.lblTblTfsa;
+    chart.data.datasets[2].data = marginNetData;
+    chart.data.datasets[2].label = trans.lblTblMargin;
+    chart.update();
+  }
+}
+
+// --- Initialize Chart.js ---
+function initChart() {
+  const ctx = document.getElementById('growthChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Non-Reg Portfolio',
+          data: [],
+          borderColor: '#94a3b8',
+          backgroundColor: 'rgba(148, 163, 184, 0.05)',
+          borderWidth: 2,
+          pointRadius: 1,
+          fill: true,
+          tension: 0.15
+        },
+        {
+          label: 'TFSA Portfolio',
+          data: [],
+          borderColor: '#4f46e5',
+          backgroundColor: 'rgba(79, 70, 229, 0.05)',
+          borderWidth: 3,
+          pointRadius: 1,
+          fill: true,
+          tension: 0.15
+        },
+        {
+          label: 'Margin Portfolio (Net)',
+          data: [],
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.05)',
+          borderWidth: 3,
+          pointRadius: 1,
+          fill: true,
+          tension: 0.15
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false 
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return ' ' + context.dataset.label + ': $' + formatNumberWithCommas(context.raw);
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          title: {
+            display: true,
+            text: currentLang === 'zh' ? '年份 (Years)' : 'Years Elapsed',
+            font: { size: 10, weight: 'bold' }
+          }
+        },
+        y: {
+          ticks: {
+            callback: function(value) {
+              return '$' + formatNumberWithCommas(value);
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// --- Setup Elements and Bindings on Load ---
+document.addEventListener('DOMContentLoaded', () => {
+  initChart();
+
+  // Range and Textbox synchronization
+  linkRangeAndText('param-principal', 'input-principal', true);
+  linkRangeAndText('param-monthly', 'input-monthly', true);
+  linkRangeAndText('param-return', 'input-return', false, true);
+  linkRangeAndText('param-years', 'input-years', false);
+  linkRangeAndText('param-leverage', 'input-leverage', false);
+  linkRangeAndText('param-gross', 'input-gross', false, true);
+  linkRangeAndText('param-tax', 'input-tax', false);
+
+  // Setup text typing restrictions & formatting for core inputs
+  setupNumericInputFormatting('input-principal', 'param-principal', 10000);
+  setupNumericInputFormatting('input-monthly', 'param-monthly', 500);
+  setupNumericInputFormatting('tax-income-input', null, 100000);
+
+  // Bind change trigger to automatic taxable income field
+  document.getElementById('tax-income-input').addEventListener('blur', recalculate);
+
+  // Run initial loading calculations
+  changeLanguage('en');
+});
+</script>
+</body>
+</html>
