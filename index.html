@@ -6,21 +6,31 @@
     <title>Canada Compound Interest & Margin Tax-Deductibility Calculator</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Chart.js 用于结果可视化 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         input[type="range"] {
             accent-color: #2563eb;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
         }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen py-10 px-4">
 
-    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
         
         <!-- 头部 Banner 与语言切换器 -->
         <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-8 relative">
             
             <!-- 语言切换按钮组合 (右上角) -->
-            <div class="absolute top-4 right-4 flex space-x-2">
+            <div class="absolute top-4 right-4 flex space-x-2 text-sm z-10">
                 <button onclick="changeLanguage('en')" id="lang-en" class="px-2.5 py-1 text-xs font-bold rounded border transition-colors border-white bg-white text-blue-800">EN</button>
                 <button onclick="changeLanguage('zh')" id="lang-zh" class="px-2.5 py-1 text-xs font-bold rounded border transition-colors border-blue-400 hover:bg-white hover:text-blue-800">中文</button>
                 <button onclick="changeLanguage('fr')" id="lang-fr" class="px-2.5 py-1 text-xs font-bold rounded border transition-colors border-blue-400 hover:bg-white hover:text-blue-800">FR</button>
@@ -34,7 +44,7 @@
             </div>
         </div>
 
-        <!-- 主体计算区域 -->
+        <!-- 主体计算区域 (左边参数输入，右边实时数字) -->
         <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
             
             <!-- 左侧：参数输入区 -->
@@ -43,61 +53,93 @@
                 
                 <!-- 初始资金 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">
-                        <span id="i18n-label-principal">Initial Principal</span>: $<span id="lbl-principal">10,000</span>
-                    </label>
-                    <input type="range" id="param-principal" min="1000" max="100000" step="5000" value="10000" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label id="i18n-label-principal" class="text-sm font-semibold text-gray-600">Initial Principal</label>
+                        <div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[140px]">
+                            <span class="text-gray-500 text-xs mr-1">$</span>
+                            <input type="number" id="input-principal" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="10000">
+                        </div>
+                    </div>
+                    <input type="range" id="param-principal" min="1000" max="100000" step="1000" value="10000" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
                 <!-- 每月定投 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">
-                        <span id="i18n-label-monthly">Monthly Contribution</span>: $<span id="lbl-monthly">500</span>
-                    </label>
-                    <input type="range" id="param-monthly" min="0" max="5000" step="100" value="500" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label id="i18n-label-monthly" class="text-sm font-semibold text-gray-600">Monthly Contribution</label>
+                        <div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[140px]">
+                            <span class="text-gray-500 text-xs mr-1">$</span>
+                            <input type="number" id="input-monthly" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="500">
+                        </div>
+                    </div>
+                    <input type="range" id="param-monthly" min="0" max="10000" step="100" value="500" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
                 <!-- 预期年化收益率 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">
-                        <span id="i18n-label-return">Expected Annual Return</span>: <span id="lbl-return">8.0</span>%
-                    </label>
-                    <input type="range" id="param-return" min="1" max="15" step="0.5" value="8" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label id="i18n-label-return" class="text-sm font-semibold text-gray-600">Expected Annual Return</label>
+                        <div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
+                            <input type="number" id="input-return" step="0.1" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="8.0">
+                            <span class="text-gray-500 text-xs ml-1">%</span>
+                        </div>
+                    </div>
+                    <input type="range" id="param-return" min="1" max="25" step="0.5" value="8" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
                 <!-- 投资年限 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">
-                        <span id="i18n-label-years">Years to Grow</span>: <span id="lbl-years">20</span> <span id="lbl-years-unit">Years</span>
-                    </label>
-                    <input type="range" id="param-years" min="1" max="40" step="1" value="20" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label id="i18n-label-years" class="text-sm font-semibold text-gray-600">Years to Grow</label>
+                        <div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
+                            <input type="number" id="input-years" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="20">
+                            <span id="lbl-years-unit" class="text-gray-500 text-xs ml-1">Years</span>
+                        </div>
+                    </div>
+                    <input type="range" id="param-years" min="1" max="50" step="1" value="20" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
                 <h2 id="i18n-section-tax" class="text-xl font-bold text-gray-700 border-b pb-2 pt-4">CRA Leverage & Tax Parameters</h2>
 
                 <!-- 杠杆比例 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">
-                        <span id="i18n-label-leverage">Margin Leverage Ratio</span>: <span id="lbl-leverage">50</span>% 
-                        <span id="i18n-note-leverage" class="text-xs text-gray-400 block">(borrowed amount relative to own cash; 50% equals 1.5x leverage)</span>
-                    </label>
-                    <input type="range" id="param-leverage" min="0" max="100" step="10" value="50" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <div>
+                            <label id="i18n-label-leverage" class="text-sm font-semibold text-gray-600">Margin Leverage Ratio</label>
+                            <span id="i18n-note-leverage" class="text-xs text-gray-400 block">(borrowed amount relative to own cash)</span>
+                        </div>
+                        <div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
+                            <input type="number" id="input-leverage" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="50">
+                            <span class="text-gray-500 text-xs ml-1">%</span>
+                        </div>
+                    </div>
+                    <input type="range" id="param-leverage" min="0" max="150" step="10" value="50" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
                 <!-- 券商原始借贷利率 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">
-                        <span id="i18n-label-gross">Broker Gross Margin Rate</span>: <span id="lbl-gross">6.50</span>%
-                    </label>
-                    <input type="range" id="param-gross" min="2" max="12" step="0.25" value="6.5" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label id="i18n-label-gross" class="text-sm font-semibold text-gray-600">Broker Gross Margin Rate</label>
+                        <div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
+                            <input type="number" id="input-gross" step="0.01" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="6.50">
+                            <span class="text-gray-500 text-xs ml-1">%</span>
+                        </div>
+                    </div>
+                    <input type="range" id="param-gross" min="1" max="15" step="0.25" value="6.5" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
 
                 <!-- 个人边际税率 -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">
-                        <span id="i18n-label-tax">Marginal Tax Rate</span>: <span id="lbl-tax">35</span>%
-                        <span id="i18n-note-tax" class="text-xs text-gray-400 block">(typically 30% - 43% for middle-income in Ontario)</span>
-                    </label>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <div>
+                            <label id="i18n-label-tax" class="text-sm font-semibold text-gray-600">Marginal Tax Rate</label>
+                            <span id="i18n-note-tax" class="text-xs text-gray-400 block">(typically 30% - 43% in Ontario)</span>
+                        </div>
+                        <div class="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-2 py-0.5 max-w-[100px]">
+                            <input type="number" id="input-tax" class="bg-transparent w-full text-right font-bold text-sm text-gray-700 focus:outline-none" value="35">
+                            <span class="text-gray-500 text-xs ml-1">%</span>
+                        </div>
+                    </div>
                     <input type="range" id="param-tax" min="0" max="54" step="1" value="35" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                 </div>
             </div>
@@ -134,26 +176,53 @@
                     </div>
                 </div>
 
-                <!-- 免责声明与推荐链接 -->
+                <!-- 推荐链接 / 商业转化卡片 -->
                 <div class="mt-8 pt-4 border-t border-gray-200">
-                    <p id="i18n-disclaimer" class="text-xs text-gray-400 leading-relaxed mb-4">
-                        * Disclaimer: This tool is for educational and illustrative purposes only and does not constitute financial or tax advice. Investing on margin involves risk.
-                    </p>
                     <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-xs">
                         <p id="i18n-affiliate-title" class="text-indigo-800 font-semibold mb-1">💡 Optimize Borrowing Costs:</p>
                         <p id="i18n-affiliate-body" class="text-indigo-600">
                             Is your broker charging too much? **Interactive Brokers (IBKR)** offers some of the lowest margin rates in Canada. <a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">Click here to explore IBKR's benefits ↗</a>
                         </p>
                     </div>
+                    <p id="i18n-disclaimer" class="text-[10px] text-gray-400 leading-relaxed mt-2.5">
+                        * Disclaimer: This tool is for educational purposes only and does not constitute financial or tax advice. Investing on margin involves risk.
+                    </p>
                 </div>
             </div>
 
         </div>
+
+        <!-- 🆕 下方中段：数据可视化折线图表区 -->
+        <div class="px-8 pb-8">
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                <h3 id="i18n-chart-title" class="text-lg font-bold text-gray-700 mb-4">Wealth Growth Projection over Time</h3>
+                <div class="relative w-full h-80">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底端支持创作者区域 (Support Me Container) -->
+        <div class="bg-gray-100 border-t border-gray-200 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-center sm:text-left">
+                <h4 id="i18n-support-title" class="font-bold text-gray-700 text-sm">Support This Project</h4>
+                <p id="i18n-support-subtitle" class="text-xs text-gray-500 mt-0.5">If this tool helped you optimize your portfolio, consider supporting my work!</p>
+            </div>
+            <div class="flex flex-wrap gap-2.5">
+                <a href="#" id="i18n-btn-donate" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition-all flex items-center">
+                    ☕ <span class="ml-1.5">Support My Work</span>
+                </a>
+                <a href="#" id="i18n-btn-referral" class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition-all flex items-center">
+                    🎁 <span class="ml-1.5">Get Free Stock Bonuses</span>
+                </a>
+            </div>
+        </div>
+
     </div>
 
     <!-- 核心多语言与计算引擎脚本 -->
     <script>
-        // 1. 语言包定义
+        // 1. 语言包定义（新增图表相关词条）
         const translations = {
             en: {
                 title: "Canada Compound Interest & Margin Tax-Deductibility Calculator",
@@ -166,10 +235,10 @@
                 yearsUnit: "Years",
                 sectionTax: "CRA Leverage & Tax Parameters",
                 labelLeverage: "Margin Leverage Ratio",
-                noteLeverage: "(borrowed amount relative to own cash; 50% equals 1.5x leverage)",
+                noteLeverage: "(borrowed amount relative to own cash)",
                 labelGross: "Broker Gross Margin Rate",
                 labelTax: "Marginal Tax Rate",
-                noteTax: "(typically 30% - 43% for middle-income in Ontario)",
+                noteTax: "(typically 30% - 43% in Ontario)",
                 sectionResults: "Projection Results",
                 resStandardTitle: "Standard Compounding (No Margin)",
                 resStandardNote: "Wealth accumulated purely through own cash and monthly contributions.",
@@ -177,9 +246,18 @@
                 resLeveragedNote: "Net portfolio value using margin and claiming annual tax deductions.",
                 resNetRateTitle: "Net Annual Borrowing Cost",
                 resTaxSavedTitle: "Cumulative Tax Saved (CRA)",
-                disclaimer: "* Disclaimer: This tool is for educational and illustrative purposes only and does not constitute financial or tax advice. Investing on margin involves risk.",
+                disclaimer: "* Disclaimer: This tool is for educational purposes only and does not constitute financial or tax advice. Investing on margin involves risk.",
                 affiliateTitle: "💡 Optimize Borrowing Costs:",
-                affiliateBody: 'Is your broker charging too much? **Interactive Brokers (IBKR)** offers some of the lowest margin rates in Canada. <a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">Click here to explore IBKR\'s benefits ↗</a>'
+                affiliateBody: 'Is your broker charging too much? **Interactive Brokers (IBKR)** offers some of the lowest margin rates in Canada. <a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">Click here to explore IBKR\'s benefits ↗</a>',
+                supportTitle: "Support This Project",
+                supportSubtitle: "If this tool helped you optimize your portfolio, consider supporting my work!",
+                btnDonate: "☕ Buy Me a Coffee",
+                btnReferral: "🎁 Partner Bonuses",
+                // 图表相关词汇
+                chartTitle: "Wealth Growth Projection over Time",
+                chartLabelStandard: "Standard Portfolio (No Leverage)",
+                chartLabelLeveraged: "Leveraged Portfolio (Net)",
+                chartXAxis: "Year"
             },
             zh: {
                 title: "🇨🇦 加拿大复利与 Margin 杠杆抵税计算器",
@@ -192,7 +270,7 @@
                 yearsUnit: "年",
                 sectionTax: "CRA 杠杆抵税参数",
                 labelLeverage: "Margin 杠杆比例",
-                noteLeverage: "（借款占自有现金的比例，50% 相当于 1.5 倍杠杆）",
+                noteLeverage: "（借款占自有现金的比例）",
                 labelGross: "券商 Margin 借贷利率",
                 labelTax: "个人边际税率",
                 noteTax: "（安省中产阶级通常在 30% - 43% 之间）",
@@ -205,7 +283,16 @@
                 resTaxSavedTitle: "累计向 CRA 抵税",
                 disclaimer: "* 免责声明：本工具仅供学习和测算娱乐，不构成任何投资或税务建议。借贷投资存在风险，请根据个人承受能力合理使用杠杆。",
                 affiliateTitle: "💡 降低借贷成本：",
-                affiliateBody: '目前券商借贷利率过高？**Interactive Brokers (IBKR)** 提供加拿大极具竞争力的低借贷利率。<a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">点击此处了解 IBKR 开户福利 ↗</a>'
+                affiliateBody: '目前券商借贷利率过高？**Interactive Brokers (IBKR)** 提供加拿大极具竞争力的低借贷利率。<a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">点击此处了解 IBKR 开户福利 ↗</a>',
+                supportTitle: "支持此项目",
+                supportSubtitle: "如果这个工具帮您看清了杠杆套利路径，欢迎给创作者点个赞或给予支持！",
+                btnDonate: "☕ 请作者喝杯咖啡",
+                btnReferral: "🎁 专属券商开户福利",
+                // 图表
+                chartTitle: "资产复利增长趋势预测",
+                chartLabelStandard: "普通定投（无杠杆）",
+                chartLabelLeveraged: "杠杆套利（扣除债务后净值）",
+                chartXAxis: "第"
             },
             fr: {
                 title: "Calculateur d'Intérêts Composés et Levier Fiscal Canadien",
@@ -218,7 +305,7 @@
                 yearsUnit: "Ans",
                 sectionTax: "Paramètres de levier et d'impôt de l'ARC",
                 labelLeverage: "Ratio de levier (Margin)",
-                noteLeverage: "(montant emprunté par rapport aux fonds propres; 50% équivaut à un levier de 1,5x)",
+                noteLeverage: "(montant emprunté par rapport aux fonds propres)",
                 labelGross: "Taux de marge brut du courtier",
                 labelTax: "Taux marginal d'imposition",
                 noteTax: "(généralement entre 30% et 43% pour la classe moyenne en Ontario)",
@@ -231,13 +318,23 @@
                 resTaxSavedTitle: "Économies d'impôt cumulées (ARC)",
                 disclaimer: "* Avertissement : Cet outil est fourni à des fins éducatives et illustratives uniquement et ne constitue pas un conseil financier ou fiscal. L'investissement sur marge comporte des risques.",
                 affiliateTitle: "💡 Optimisez vos coûts d'emprunt :",
-                affiliateBody: 'Votre courtier facture trop cher? **Interactive Brokers (IBKR)** offre des taux de marge parmi les plus bas au Canada. <a href="#" class="text-indigo-700 de soulignement font-bold hover:text-indigo-900">Cliquez ici pour découvrir les avantages d\'IBKR ↗</a>'
+                affiliateBody: 'Votre courtier facture trop cher? **Interactive Brokers (IBKR)** offre des taux de marge parmi les plus bas au Canada. <a href="#" class="text-indigo-700 de soulignement font-bold hover:text-indigo-900">Cliquez ici pour découvrir les avantages d\'IBKR ↗</a>',
+                supportTitle: "Soutenir ce projet",
+                supportSubtitle: "Si cet outil vous a aidé à optimiser votre portefeuille, soutenez mon travail!",
+                btnDonate: "☕ M'offrir un café",
+                btnReferral: "🎁 Offres partenaires exclusives",
+                // 图表
+                chartTitle: "Projection de la croissance du patrimoine au fil du temps",
+                chartLabelStandard: "Portefeuille Standard (Sans levier)",
+                chartLabelLeveraged: "Portefeuille avec levier (Net)",
+                chartXAxis: "Année"
             }
         };
 
-        let currentLang = 'en'; // 默认语言：英文
+        let currentLang = 'en';
+        let growthChartInstance = null; // 用于存储 Chart 实例
 
-        // 获取 DOM 节点
+        // 获取 DOM
         const elPrincipal = document.getElementById('param-principal');
         const elMonthly = document.getElementById('param-monthly');
         const elReturn = document.getElementById('param-return');
@@ -246,25 +343,98 @@
         const elGross = document.getElementById('param-gross');
         const elTax = document.getElementById('param-tax');
 
-        const lblPrincipal = document.getElementById('lbl-principal');
-        const lblMonthly = document.getElementById('lbl-monthly');
-        const lblReturn = document.getElementById('lbl-return');
-        const lblYears = document.getElementById('lbl-years');
-        const lblYearsUnit = document.getElementById('lbl-years-unit');
-        const lblLeverage = document.getElementById('lbl-leverage');
-        const lblGross = document.getElementById('lbl-gross');
-        const lblTax = document.getElementById('lbl-tax');
+        const inputPrincipal = document.getElementById('input-principal');
+        const inputMonthly = document.getElementById('input-monthly');
+        const inputReturn = document.getElementById('input-return');
+        const inputYears = document.getElementById('input-years');
+        const inputLeverage = document.getElementById('input-leverage');
+        const inputGross = document.getElementById('input-gross');
+        const inputTax = document.getElementById('input-tax');
 
+        const lblYearsUnit = document.getElementById('lbl-years-unit');
         const resStandard = document.getElementById('res-standard');
         const resLeveraged = document.getElementById('res-leveraged');
         const resNetRate = document.getElementById('res-net-rate');
         const resTaxSaved = document.getElementById('res-tax-saved');
 
-        // 切换语言函数
+        // 初始化 Chart.js
+        function initChart() {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            growthChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: '',
+                            data: [],
+                            borderColor: '#9ca3af', // 灰
+                            backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            pointRadius: 1,
+                            fill: true
+                        },
+                        {
+                            label: '',
+                            data: [],
+                            borderColor: '#2563eb', // 蓝
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.1,
+                            pointRadius: 2,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10 } }
+                        },
+                        y: {
+                            ticks: {
+                                font: { size: 10 },
+                                callback: function(value) {
+                                    return '$' + (value / 1000).toLocaleString() + 'k';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 语言切换函数
         function changeLanguage(lang) {
             currentLang = lang;
             
-            // 1. 更新翻译文字
             document.getElementById('i18n-title').innerText = translations[lang].title;
             document.getElementById('i18n-subtitle').innerText = translations[lang].subtitle;
             document.getElementById('i18n-section-params').innerText = translations[lang].sectionParams;
@@ -289,10 +459,17 @@
             document.getElementById('i18n-affiliate-title').innerText = translations[lang].affiliateTitle;
             document.getElementById('i18n-affiliate-body').innerHTML = translations[lang].affiliateBody;
 
-            // 2. 动态调整单位
+            // 底部支持区域
+            document.getElementById('i18n-support-title').innerText = translations[lang].supportTitle;
+            document.getElementById('i18n-support-subtitle').innerText = translations[lang].supportSubtitle;
+            document.getElementById('i18n-btn-donate').innerHTML = `☕ <span class="ml-1.5">${translations[lang].btnDonate}</span>`;
+            document.getElementById('i18n-btn-referral').innerHTML = `🎁 <span class="ml-1.5">${translations[lang].btnReferral}</span>`;
+
+            // 图表标题
+            document.getElementById('i18n-chart-title').innerText = translations[lang].chartTitle;
+
             lblYearsUnit.innerText = translations[lang].yearsUnit;
 
-            // 3. 更新按钮的高亮视觉状态
             ['en', 'zh', 'fr'].forEach(l => {
                 const btn = document.getElementById(`lang-${l}`);
                 if (l === lang) {
@@ -302,52 +479,85 @@
                 }
             });
 
-            // 4. 重新计算生成新语言下的数值
             recalculate();
         }
 
-        // 数字格式化
+        // 双向联动绑定逻辑
+        function bindInputs(slider, inputField, min, max) {
+            slider.addEventListener('input', () => {
+                inputField.value = slider.value;
+                recalculate();
+            });
+            inputField.addEventListener('input', () => {
+                let val = parseFloat(inputField.value);
+                if (isNaN(val)) val = min;
+                if (val < min) val = min;
+                if (val > max) val = max;
+                slider.value = val;
+                recalculate();
+            });
+            inputField.addEventListener('blur', () => {
+                let val = parseFloat(inputField.value);
+                if (isNaN(val)) val = min;
+                if (val < min) val = min;
+                if (val > max) {
+                    val = max;
+                    inputField.value = max;
+                }
+                recalculate();
+            });
+        }
+
+        bindInputs(elPrincipal, inputPrincipal, 0, 10000000);
+        bindInputs(elMonthly, inputMonthly, 0, 1000000);
+        bindInputs(elReturn, inputReturn, -50, 100);
+        bindInputs(elYears, inputYears, 1, 100);
+        bindInputs(elLeverage, inputLeverage, 0, 500);
+        bindInputs(elGross, inputGross, 0, 30);
+        bindInputs(elTax, inputTax, 0, 54);
+
         function formatMoney(num) {
             return '$' + Math.round(num).toLocaleString('en-US');
         }
 
-        // 核心计算逻辑
+        // 核心数学与图表更新逻辑
         function recalculate() {
-            const principal = parseFloat(elPrincipal.value);
-            const monthly = parseFloat(elMonthly.value);
-            const r = parseFloat(elReturn.value) / 100;
-            const years = parseInt(elYears.value);
-            const leverageRatio = parseFloat(elLeverage.value) / 100;
-            const grossRate = parseFloat(elGross.value) / 100;
-            const taxRate = parseFloat(elTax.value) / 100;
+            const principal = parseFloat(inputPrincipal.value) || 0;
+            const monthly = parseFloat(inputMonthly.value) || 0;
+            const r = (parseFloat(inputReturn.value) || 0) / 100;
+            const years = parseInt(inputYears.value) || 1;
+            const leverageRatio = (parseFloat(inputLeverage.value) || 0) / 100;
+            const grossRate = (parseFloat(inputGross.value) || 0) / 100;
+            const taxRate = (parseFloat(inputTax.value) || 0) / 100;
 
-            lblPrincipal.innerText = principal.toLocaleString('en-US');
-            lblMonthly.innerText = monthly.toLocaleString('en-US');
-            lblReturn.innerText = (r * 100).toFixed(1);
-            lblYears.innerText = years;
-            lblLeverage.innerText = (leverageRatio * 100).toFixed(0);
-            lblGross.innerText = (grossRate * 100).toFixed(2);
-            lblTax.innerText = (taxRate * 100).toFixed(0);
-
-            // 实际借款利息
             const netBorrowRate = grossRate * (1 - taxRate);
             resNetRate.innerText = (netBorrowRate * 100).toFixed(2) + '%';
 
             const monthlyR = Math.pow(1 + r, 1 / 12) - 1;
 
-            // 模拟 1：标准定投
-            let standardValue = principal;
-            for (let y = 1; y <= years; y++) {
-                for (let m = 0; m < 12; m++) {
-                    standardValue = (standardValue + monthly) * (1 + monthlyR);
-                }
-            }
+            // 存储每年数据的数组
+            let labels = [];
+            let standardHistory = [];
+            let leveragedHistory = [];
 
-            // 模拟 2：杠杆 + 省税
+            // 初始值 (第 0 年)
+            labels.push(translations[currentLang].chartXAxis + " 0" + (currentLang === 'zh' ? '年' : ''));
+            standardHistory.push(principal);
+            leveragedHistory.push(principal);
+
+            let standardValue = principal;
             let leveragedOwnCash = principal; 
             let cumulativeTaxSaved = 0;
 
+            // 按年复利演进并记录历史点
             for (let y = 1; y <= years; y++) {
+                // 计算无杠杆
+                for (let m = 0; m < 12; m++) {
+                    standardValue = (standardValue + monthly) * (1 + monthlyR);
+                }
+                standardHistory.push(standardValue);
+
+                // 计算杠杆
                 const debtThisYear = leveragedOwnCash * leverageRatio;
                 let totalInvestedAsset = leveragedOwnCash + debtThisYear;
 
@@ -361,21 +571,35 @@
 
                 cumulativeTaxSaved += taxSaved;
                 leveragedOwnCash = totalInvestedAsset - debtThisYear - netInterestCost;
-                
                 if (leveragedOwnCash < 0) leveragedOwnCash = 0;
+
+                leveragedHistory.push(leveragedOwnCash);
+
+                // 填充 X 轴标签
+                const xLabel = currentLang === 'zh' 
+                    ? `第 ${y} 年` 
+                    : `${translations[currentLang].chartXAxis} ${y}`;
+                labels.push(xLabel);
             }
 
+            // 更新左侧结果卡片数值
             resStandard.innerText = formatMoney(standardValue);
             resLeveraged.innerText = formatMoney(leveragedOwnCash);
             resTaxSaved.innerText = formatMoney(cumulativeTaxSaved);
+
+            // 实时更新图表数据
+            if (growthChartInstance) {
+                growthChartInstance.data.labels = labels;
+                growthChartInstance.data.datasets[0].label = translations[currentLang].chartLabelStandard;
+                growthChartInstance.data.datasets[0].data = standardHistory;
+                growthChartInstance.data.datasets[1].label = translations[currentLang].chartLabelLeveraged;
+                growthChartInstance.data.datasets[1].data = leveragedHistory;
+                growthChartInstance.update();
+            }
         }
 
-        // 监听滑块事件
-        [elPrincipal, elMonthly, elReturn, elYears, elLeverage, elGross, elTax].forEach(el => {
-            el.addEventListener('input', recalculate);
-        });
-
-        // 页面首次载入：执行英文默认渲染
+        // 首次加载初始化
+        initChart();
         changeLanguage('en');
     </script>
 </body>
