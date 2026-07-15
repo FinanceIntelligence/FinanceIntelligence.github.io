@@ -44,6 +44,16 @@
             </div>
         </div>
 
+        <!-- 🆕 置顶：数据可视化折线图表区 -->
+        <div class="px-8 pt-8">
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                <h3 id="i18n-chart-title" class="text-lg font-bold text-gray-700 mb-4">Wealth Growth Projection over Time</h3>
+                <div class="relative w-full h-80">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+        </div>
+
         <!-- 主体计算区域 (左边参数输入，右边实时数字) -->
         <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
             
@@ -192,16 +202,6 @@
 
         </div>
 
-        <!-- 🆕 下方中段：数据可视化折线图表区 -->
-        <div class="px-8 pb-8">
-            <div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <h3 id="i18n-chart-title" class="text-lg font-bold text-gray-700 mb-4">Wealth Growth Projection over Time</h3>
-                <div class="relative w-full h-80">
-                    <canvas id="growthChart"></canvas>
-                </div>
-            </div>
-        </div>
-
         <!-- 底端支持创作者区域 (Support Me Container) -->
         <div class="bg-gray-100 border-t border-gray-200 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="text-center sm:text-left">
@@ -210,10 +210,10 @@
             </div>
             <div class="flex flex-wrap gap-2.5">
                 <a href="#" id="i18n-btn-donate" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition-all flex items-center">
-                    ☕ <span class="ml-1.5">Support My Work</span>
+                    ☕ <span class="ml-1.5">Buy Me a Coffee</span>
                 </a>
                 <a href="#" id="i18n-btn-referral" class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition-all flex items-center">
-                    🎁 <span class="ml-1.5">Get Free Stock Bonuses</span>
+                    🎁 <span class="ml-1.5">Financial Product Referral Links</span>
                 </a>
             </div>
         </div>
@@ -222,7 +222,7 @@
 
     <!-- 核心多语言与计算引擎脚本 -->
     <script>
-        // 1. 语言包定义（新增图表相关词条）
+        // 1. 语言包定义（更新为 Financial Product Referral Links 且合并 Emoji）
         const translations = {
             en: {
                 title: "Canada Compound Interest & Margin Tax-Deductibility Calculator",
@@ -251,8 +251,8 @@
                 affiliateBody: 'Is your broker charging too much? **Interactive Brokers (IBKR)** offers some of the lowest margin rates in Canada. <a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">Click here to explore IBKR\'s benefits ↗</a>',
                 supportTitle: "Support This Project",
                 supportSubtitle: "If this tool helped you optimize your portfolio, consider supporting my work!",
-                btnDonate: "☕ Buy Me a Coffee",
-                btnReferral: "🎁 Partner Bonuses",
+                btnDonate: "Buy Me a Coffee", // 移除按钮本身的重复 ☕ 
+                btnReferral: "Financial Product Referral Links",
                 // 图表相关词汇
                 chartTitle: "Wealth Growth Projection over Time",
                 chartLabelStandard: "Standard Portfolio (No Leverage)",
@@ -286,8 +286,8 @@
                 affiliateBody: '目前券商借贷利率过高？**Interactive Brokers (IBKR)** 提供加拿大极具竞争力的低借贷利率。<a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">点击此处了解 IBKR 开户福利 ↗</a>',
                 supportTitle: "支持此项目",
                 supportSubtitle: "如果这个工具帮您看清了杠杆套利路径，欢迎给创作者点个赞或给予支持！",
-                btnDonate: "☕ 请作者喝杯咖啡",
-                btnReferral: "🎁 专属券商开户福利",
+                btnDonate: "请作者喝杯咖啡",
+                btnReferral: "金融产品推荐链接",
                 // 图表
                 chartTitle: "资产复利增长趋势预测",
                 chartLabelStandard: "普通定投（无杠杆）",
@@ -321,8 +321,8 @@
                 affiliateBody: 'Votre courtier facture trop cher? **Interactive Brokers (IBKR)** offre des taux de marge parmi les plus bas au Canada. <a href="#" class="text-indigo-700 de soulignement font-bold hover:text-indigo-900">Cliquez ici pour découvrir les avantages d\'IBKR ↗</a>',
                 supportTitle: "Soutenir ce projet",
                 supportSubtitle: "Si cet outil vous a aidé à optimiser votre portefeuille, soutenez mon travail!",
-                btnDonate: "☕ M'offrir un café",
-                btnReferral: "🎁 Offres partenaires exclusives",
+                btnDonate: "M'offrir un café",
+                btnReferral: "Liens de parrainage de produits financiers",
                 // 图表
                 chartTitle: "Projection de la croissance du patrimoine au fil du temps",
                 chartLabelStandard: "Portefeuille Standard (Sans levier)",
@@ -462,6 +462,8 @@
             // 底部支持区域
             document.getElementById('i18n-support-title').innerText = translations[lang].supportTitle;
             document.getElementById('i18n-support-subtitle').innerText = translations[lang].supportSubtitle;
+            
+            // 按钮逻辑：左侧保留单个 ☕ 标签，右侧保留 🎁 标签
             document.getElementById('i18n-btn-donate').innerHTML = `☕ <span class="ml-1.5">${translations[lang].btnDonate}</span>`;
             document.getElementById('i18n-btn-referral').innerHTML = `🎁 <span class="ml-1.5">${translations[lang].btnReferral}</span>`;
 
@@ -582,7 +584,7 @@
                 labels.push(xLabel);
             }
 
-            // 更新左侧结果卡片数值
+            // 更新结果卡片数值
             resStandard.innerText = formatMoney(standardValue);
             resLeveraged.innerText = formatMoney(leveragedOwnCash);
             resTaxSaved.innerText = formatMoney(cumulativeTaxSaved);
