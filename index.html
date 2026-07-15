@@ -218,19 +218,42 @@
                         <p id="display-card-note" class="text-xs text-gray-500 mt-2 leading-relaxed">...</p>
                     </div>
 
-                    <!-- Comparison Table for clear side-by-side view -->
-                    <div class="space-y-2 text-xs">
-                        <div class="flex justify-between items-center p-2 rounded-lg bg-white border border-gray-100">
-                            <span class="text-gray-500 flex items-center">🌐 <span id="i18n-lbl-tbl-nonreg" class="ml-1">Non-Reg Portfolio</span></span>
-                            <span class="font-bold text-gray-700" id="tbl-val-nonreg">$0</span>
+                    <!-- Comparison Table with Active Plot Checkboxes and Total Returns (%) -->
+                    <div class="space-y-2.5">
+                        <!-- Non-Reg Row -->
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-white border border-gray-200 shadow-sm transition-all hover:border-gray-300">
+                            <label class="flex items-center space-x-2.5 cursor-pointer select-none text-xs">
+                                <input type="checkbox" id="chk-nonreg" checked onchange="toggleDataset(0)" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="text-gray-600 flex items-center">🌐 <span id="i18n-lbl-tbl-nonreg" class="ml-1.5 font-medium">Non-Reg Portfolio</span></span>
+                            </label>
+                            <div class="text-right">
+                                <span class="font-bold text-gray-700 block text-sm" id="tbl-val-nonreg">$0</span>
+                                <span class="text-[10px] text-gray-400 font-semibold block" id="tbl-ret-nonreg">+0.00% Ret</span>
+                            </div>
                         </div>
-                        <div class="flex justify-between items-center p-2 rounded-lg bg-white border border-gray-100">
-                            <span class="text-gray-500 flex items-center">🛡️ <span id="i18n-lbl-tbl-tfsa" class="ml-1">TFSA Portfolio (Tax-Free)</span></span>
-                            <span class="font-bold text-indigo-600" id="tbl-val-tfsa">$0</span>
+
+                        <!-- TFSA Row -->
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-white border border-gray-200 shadow-sm transition-all hover:border-gray-300">
+                            <label class="flex items-center space-x-2.5 cursor-pointer select-none text-xs">
+                                <input type="checkbox" id="chk-tfsa" checked onchange="toggleDataset(1)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                                <span class="text-gray-600 flex items-center">🛡️ <span id="i18n-lbl-tbl-tfsa" class="ml-1.5 font-medium">TFSA Portfolio (Tax-Free)</span></span>
+                            </label>
+                            <div class="text-right">
+                                <span class="font-bold text-indigo-600 block text-sm" id="tbl-val-tfsa">$0</span>
+                                <span class="text-[10px] text-indigo-500 font-semibold block" id="tbl-ret-tfsa">+0.00% Ret</span>
+                            </div>
                         </div>
-                        <div class="flex justify-between items-center p-2 rounded-lg bg-white border border-gray-100">
-                            <span class="text-gray-500 flex items-center">🚀 <span id="i18n-lbl-tbl-margin" class="ml-1">Margin Portfolio (Net)</span></span>
-                            <span class="font-bold text-blue-700" id="tbl-val-margin">$0</span>
+
+                        <!-- Margin Row -->
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-white border border-gray-200 shadow-sm transition-all hover:border-gray-300">
+                            <label class="flex items-center space-x-2.5 cursor-pointer select-none text-xs">
+                                <input type="checkbox" id="chk-margin" checked onchange="toggleDataset(2)" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="text-gray-600 flex items-center">🚀 <span id="i18n-lbl-tbl-margin" class="ml-1.5 font-medium">Margin Portfolio (Net)</span></span>
+                            </label>
+                            <div class="text-right">
+                                <span class="font-bold text-blue-700 block text-sm" id="tbl-val-margin">$0</span>
+                                <span class="text-[10px] text-blue-600 font-semibold block" id="tbl-ret-margin">+0.00% Ret</span>
+                            </div>
                         </div>
                     </div>
 
@@ -549,6 +572,16 @@
             recalculate();
         }
 
+        function toggleDataset(index) {
+            if (!growthChartInstance) return;
+            const isVisible = growthChartInstance.isDatasetVisible(index);
+            if (isVisible) {
+                growthChartInstance.hide(index);
+            } else {
+                growthChartInstance.show(index);
+            }
+        }
+
         function getMarginalTaxRate(province, income) {
             const brackets = TAX_BRACKETS_2026[province] || TAX_BRACKETS_2026['ON'];
             for (let i = 0; i < brackets.length; i++) {
@@ -570,7 +603,7 @@
                             label: 'Non-Reg',
                             data: [],
                             borderColor: '#9ca3af',
-                            backgroundColor: 'rgba(156, 163, 175, 0.05)',
+                            backgroundColor: 'rgba(156, 163, 175, 0.04)',
                             borderWidth: 2,
                             tension: 0.1,
                             pointRadius: 1,
@@ -580,7 +613,7 @@
                             label: 'TFSA',
                             data: [],
                             borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.05)',
+                            backgroundColor: 'rgba(99, 102, 241, 0.04)',
                             borderWidth: 2.5,
                             tension: 0.1,
                             pointRadius: 1,
@@ -590,7 +623,7 @@
                             label: 'Margin (Net)',
                             data: [],
                             borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            backgroundColor: 'rgba(37, 99, 235, 0.08)',
                             borderWidth: 3.5,
                             tension: 0.1,
                             pointRadius: 2,
@@ -603,8 +636,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'top',
-                            labels: { boxWidth: 12, font: { size: 11 } }
+                            display: false // Hide standard legend, as we have beautiful custom checkbox legend
                         },
                         tooltip: {
                             mode: 'index',
@@ -747,10 +779,12 @@
             const netBorrowRate = grossRate * (1 - taxRate);
             resNetRate.innerText = (netBorrowRate * 100).toFixed(2) + '%';
 
+            // Total Cash Invested Over Time
+            const totalCashContributed = principal + (monthly * 12 * years);
+
             // Compounding calculations:
             // 1. Non-Reg (Taxable)
-            // For simplified calculation, dividends/gains tax of ~2% annual drag is typical in taxable accounts
-            const annualTaxDrag = 0.015; // 1.5% annual tax friction on growth/distributions
+            const annualTaxDrag = 0.015; // 1.5% annual tax drag on growth
             const nonRegR = Math.pow(1 + Math.max(0, r - annualTaxDrag), 1 / 12) - 1;
 
             // 2. TFSA (Fully tax-sheltered growth)
@@ -788,7 +822,6 @@
                 const debtThisYear = leveragedOwnCash * leverageRatio;
                 let totalInvestedAsset = leveragedOwnCash + debtThisYear;
 
-                // Growth calculated at the pure return rate (TFSA rate) as standard
                 for (let m = 0; m < 12; m++) {
                     totalInvestedAsset = (totalInvestedAsset + monthly) * (1 + tfsaR);
                 }
@@ -798,7 +831,6 @@
                 const netInterestCost = interestPaid - taxSaved;
 
                 cumulativeTaxSaved += taxSaved;
-                // Net value after subtracting interest friction and debt
                 leveragedOwnCash = totalInvestedAsset - debtThisYear - netInterestCost;
                 if (leveragedOwnCash < 0) leveragedOwnCash = 0;
 
@@ -808,10 +840,21 @@
                 labels.push(xLabel);
             }
 
-            // Sync comparison table values
+            // Calculate Return Percentages (%) relative to Own Invested Capital
+            const nonRegReturnPercent = totalCashContributed > 0 ? ((nonRegValue - totalCashContributed) / totalCashContributed) * 100 : 0;
+            const tfsaReturnPercent = totalCashContributed > 0 ? ((tfsaValue - totalCashContributed) / totalCashContributed) * 100 : 0;
+            const marginReturnPercent = totalCashContributed > 0 ? ((leveragedOwnCash - totalCashContributed) / totalCashContributed) * 100 : 0;
+
+            // Sync comparison table absolute values & percentage returns
             document.getElementById('tbl-val-nonreg').innerText = formatMoney(nonRegValue);
+            document.getElementById('tbl-ret-nonreg').innerText = `${nonRegReturnPercent >= 0 ? '+' : ''}${nonRegReturnPercent.toFixed(1)}% Ret`;
+
             document.getElementById('tbl-val-tfsa').innerText = formatMoney(tfsaValue);
+            document.getElementById('tbl-ret-tfsa').innerText = `${tfsaReturnPercent >= 0 ? '+' : ''}${tfsaReturnPercent.toFixed(1)}% Ret`;
+
             document.getElementById('tbl-val-margin').innerText = formatMoney(leveragedOwnCash);
+            document.getElementById('tbl-ret-margin').innerText = `${marginReturnPercent >= 0 ? '+' : ''}${marginReturnPercent.toFixed(1)}% Ret`;
+
             resTaxSaved.innerText = formatMoney(cumulativeTaxSaved);
 
             // Update main big card display based on active toggle
@@ -822,25 +865,25 @@
 
             if (currentAccountMode === 'nonreg') {
                 displayTitle.innerText = translations[currentLang].lblTblNonreg;
-                displayValue.innerText = formatMoney(nonRegValue);
-                displayValue.className = "text-4xl font-extrabold text-gray-700 mt-1.5";
+                displayValue.innerText = formatMoney(nonRegValue) + ` (${nonRegReturnPercent.toFixed(1)}%)`;
+                displayValue.className = "text-3xl font-extrabold text-gray-700 mt-1.5";
                 displayNote.innerText = translations[currentLang].noteNonRegCard;
                 marginOnlySection.classList.add('hidden');
             } else if (currentAccountMode === 'tfsa') {
                 displayTitle.innerText = translations[currentLang].lblTblTfsa;
-                displayValue.innerText = formatMoney(tfsaValue);
-                displayValue.className = "text-4xl font-extrabold text-indigo-700 mt-1.5";
+                displayValue.innerText = formatMoney(tfsaValue) + ` (${tfsaReturnPercent.toFixed(1)}%)`;
+                displayValue.className = "text-3xl font-extrabold text-indigo-700 mt-1.5";
                 displayNote.innerText = translations[currentLang].noteTfsaCard;
                 marginOnlySection.classList.add('hidden');
             } else {
                 displayTitle.innerText = translations[currentLang].lblTblMargin;
-                displayValue.innerText = formatMoney(leveragedOwnCash);
-                displayValue.className = "text-4xl font-extrabold text-blue-700 mt-1.5";
+                displayValue.innerText = formatMoney(leveragedOwnCash) + ` (${marginReturnPercent.toFixed(1)}%)`;
+                displayValue.className = "text-3xl font-extrabold text-blue-700 mt-1.5";
                 displayNote.innerText = translations[currentLang].noteLeveragedCard;
                 marginOnlySection.classList.remove('hidden');
             }
 
-            // Update charts
+            // Sync chart datasets and labels
             if (growthChartInstance) {
                 growthChartInstance.data.labels = labels;
                 growthChartInstance.data.datasets[0].label = translations[currentLang].chartLabelNonReg;
@@ -849,6 +892,12 @@
                 growthChartInstance.data.datasets[1].data = tfsaHistory;
                 growthChartInstance.data.datasets[2].label = translations[currentLang].chartLabelLeveraged;
                 growthChartInstance.data.datasets[2].data = leveragedHistory;
+                
+                // Read checkbox states to toggle visibility state of datasets on calculate
+                growthChartInstance.setDatasetVisibility(0, document.getElementById('chk-nonreg').checked);
+                growthChartInstance.setDatasetVisibility(1, document.getElementById('chk-tfsa').checked);
+                growthChartInstance.setDatasetVisibility(2, document.getElementById('chk-margin').checked);
+                
                 growthChartInstance.update();
             }
         }
