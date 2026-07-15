@@ -334,6 +334,10 @@
                     <a href="https://buymeacoffee.com/" target="_blank" id="i18n-btn-donate" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold py-2.5 px-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center">
                         ☕ <span class="ml-2">Buy Me a Coffee</span>
                     </a>
+                    <!-- e-Transfer 按钮 -->
+                    <button onclick="document.getElementById('etransfer-modal').classList.remove('hidden')" class="bg-gray-800 hover:bg-gray-900 text-white text-sm font-bold py-2.5 px-6 rounded-xl shadow-md transition-all flex items-center justify-center">
+                       ⚡ Interac e-Transfer
+                    </button>
                 </div>
             </div>
 
@@ -1083,6 +1087,23 @@ document.addEventListener('DOMContentLoaded', () => {
     changeLanguage('en');
     setAccountMode('leveraged');
 });
+<!-- e-Transfer Modal -->
+<div id="etransfer-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-6 rounded-2xl max-w-sm w-full shadow-2xl">
+        <h4 class="font-bold text-lg mb-4 text-gray-800">Support via e-Transfer</h4>
+        <p class="text-sm text-gray-600 mb-4">Please send your support to:</p>
+        
+        <div class="bg-gray-100 p-3 rounded-lg text-center mb-4 border border-gray-200">
+            <span class="font-mono font-bold text-indigo-700 select-all">your-email@example.com</span>
+        </div>
+        
+        <p class="text-[11px] text-gray-400 mb-6">Security Question: "What is this for?"<br>Answer: "sandbox"</p>
+        
+        <button onclick="document.getElementById('etransfer-modal').classList.add('hidden')" class="w-full bg-gray-200 hover:bg-gray-300 py-2 rounded-lg text-sm font-bold text-gray-700">
+            Close
+        </button>
+    </div>
+</div>
 </script>
 </body>
 </html>
