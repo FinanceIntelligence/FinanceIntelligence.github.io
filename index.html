@@ -1,13 +1,241 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8"> <!-- 这一行是解决乱码的关键，强制使用 UTF-8 编码 -->
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的加拿大理财工具</title>
+    <title>加拿大复利与 Margin 杠杆抵税计算器</title>
+    <!-- 引入 Tailwind CSS 用于快速美化界面 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 简单微调滑块样式 */
+        input[type="range"] {
+            accent-color: #2563eb;
+        }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; text-align: center; padding-top: 100px; background-color: #f9f9f9; color: #333;">
-    <h1 style="color: #2c3e50;">🇨🇦 加拿大复利与杠杆计算器 正在筹备中...</h1>
-    <p style="font-size: 18px;">这是一个完全免费的财务规划与杠杆套利测算小工具。</p>
-    <p style="color: #7f8c8d;">马上回来，敬请期待！</p>
+<body class="bg-gray-50 text-gray-800 min-h-screen py-10 px-4">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- 头部 Banner -->
+        <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-8 text-center">
+            <h1 class="text-3xl font-extrabold mb-2">🇨🇦 加拿大复利与 Margin 杠杆抵税计算器</h1>
+            <p class="text-blue-100 max-w-2xl mx-auto text-sm">
+                专为加拿大投资者设计。对比普通定投 vs. 利用应税账户（Non-Reg）进行 Margin 投资的复利效果。CRA 规定用于投资产生收入的借贷利息可全额抵扣个人所得税。
+            </p>
+        </div>
+
+        <!-- 主体计算区域 -->
+        <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- 左侧：参数输入区 -->
+            <div class="space-y-6">
+                <h2 class="text-xl font-bold text-gray-700 border-b pb-2">调整投资参数</h2>
+                
+                <!-- 初始资金 -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">初始本金 (Initial Cash): $<span id="lbl-principal">10,000</span></label>
+                    <input type="range" id="param-principal" min="1000" max="100000" step="5000" value="10000" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                </div>
+
+                <!-- 每月定投 -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">每月定投金额 (Monthly Deposit): $<span id="lbl-monthly">500</span></label>
+                    <input type="range" id="param-monthly" min="0" max="5000" step="100" value="500" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                </div>
+
+                <!-- 预期年化收益率 -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">预期年化收益率 (Expected Return): <span id="lbl-return">8.0</span>%</label>
+                    <input type="range" id="param-return" min="1" max="15" step="0.5" value="8" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                </div>
+
+                <!-- 投资年限 -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">投资年限 (Years to Grow): <span id="lbl-years">20</span> 年</label>
+                    <input type="range" id="param-years" min="1" max="40" step="1" value="20" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                </div>
+
+                <h2 class="text-xl font-bold text-gray-700 border-b pb-2 pt-4">CRA 杠杆抵税参数</h2>
+
+                <!-- 杠杆比例 -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">
+                        Margin 杠杆比例 (Leverage Ratio): <span id="lbl-leverage">50</span>% 
+                        <span class="text-xs text-gray-400 block">（借款占自有现金的比例，50% 相当于 1.5 倍杠杆）</span>
+                    </label>
+                    <input type="range" id="param-leverage" min="0" max="100" step="10" value="50" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                </div>
+
+                <!-- 券商原始借贷利率 -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">券商 Margin 借贷利率 (Gross Rate): <span id="lbl-gross">6.50</span>%</label>
+                    <input type="range" id="param-gross" min="2" max="12" step="0.25" value="6.5" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                </div>
+
+                <!-- 个人边际税率 -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">
+                        个人边际税率 (Marginal Tax Rate): <span id="lbl-tax">35</span>%
+                        <span class="text-xs text-gray-400 block">（安省中产阶级通常在 30% - 43% 之间）</span>
+                    </label>
+                    <input type="range" id="param-tax" min="0" max="54" step="1" value="35" class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                </div>
+            </div>
+
+            <!-- 右侧：实时计算结果展示区 -->
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-700 mb-6 border-b pb-2">模拟测算结果</h2>
+                    
+                    <!-- 核心指标 1：无杠杆 -->
+                    <div class="mb-6">
+                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">普通复利终值 (无杠杆)</span>
+                        <div class="text-3xl font-bold text-gray-700 mt-1" id="res-standard">$0</div>
+                        <p class="text-xs text-gray-500 mt-1">仅靠自有资金加每月定投积攒的资产。</p>
+                    </div>
+
+                    <!-- 核心指标 2：杠杆+抵税 -->
+                    <div class="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">杠杆套利终值 (扣除债务)</span>
+                        <div class="text-4xl font-extrabold text-blue-700 mt-1" id="res-leveraged">$0</div>
+                        <p class="text-xs text-blue-600 mt-1">利用 Margin 放大本金并每年扣减税收后的净资产。</p>
+                    </div>
+
+                    <!-- 核心指标 3：累计省税与实际成本 -->
+                    <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 text-sm">
+                        <div>
+                            <span class="text-xs text-gray-400 block">实际借款年化成本</span>
+                            <span class="font-bold text-gray-700" id="res-net-rate">0.00%</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-400 block">累计向 CRA 抵税</span>
+                            <span class="font-bold text-green-600" id="res-tax-saved">$0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 免责声明与变现链接预留 -->
+                <div class="mt-8 pt-4 border-t border-gray-200">
+                    <p class="text-xs text-gray-400 leading-relaxed mb-4">
+                        * 免责声明：本工具仅供学习和测算娱乐，不构成任何投资或税务建议。借贷投资存在风险，请根据个人承受能力合理使用杠杆。
+                    </p>
+                    <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-xs">
+                        <p class="text-indigo-800 font-semibold mb-1">💡 降维降低借贷成本：</p>
+                        <p class="text-indigo-600">
+                            目前券商借贷利率过高？**Interactive Brokers (IBKR)** 提供加拿大极具竞争力的低借贷利率。<a href="#" class="text-indigo-700 underline font-bold hover:text-indigo-900">点击此处了解 IBKR 开户福利 ↗</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 核心计算脚本 -->
+    <script>
+        // 获取所有 DOM 节点
+        const elPrincipal = document.getElementById('param-principal');
+        const elMonthly = document.getElementById('param-monthly');
+        const elReturn = document.getElementById('param-return');
+        const elYears = document.getElementById('param-years');
+        const elLeverage = document.getElementById('param-leverage');
+        const elGross = document.getElementById('param-gross');
+        const elTax = document.getElementById('param-tax');
+
+        const lblPrincipal = document.getElementById('lbl-principal');
+        const lblMonthly = document.getElementById('lbl-monthly');
+        const lblReturn = document.getElementById('lbl-return');
+        const lblYears = document.getElementById('lbl-years');
+        const lblLeverage = document.getElementById('lbl-leverage');
+        const lblGross = document.getElementById('lbl-gross');
+        const lblTax = document.getElementById('lbl-tax');
+
+        const resStandard = document.getElementById('res-standard');
+        const resLeveraged = document.getElementById('res-leveraged');
+        const resNetRate = document.getElementById('res-net-rate');
+        const resTaxSaved = document.getElementById('res-tax-saved');
+
+        // 数字格式化辅助函数
+        function formatMoney(num) {
+            return '$' + Math.round(num).toLocaleString('en-US');
+        }
+
+        // 核心计算逻辑
+        function recalculate() {
+            // 1. 读取并更新滑动条数值显示
+            const principal = parseFloat(elPrincipal.value);
+            const monthly = parseFloat(elMonthly.value);
+            const r = parseFloat(elReturn.value) / 100;
+            const years = parseInt(elYears.value);
+            const leverageRatio = parseFloat(elLeverage.value) / 100;
+            const grossRate = parseFloat(elGross.value) / 100;
+            const taxRate = parseFloat(elTax.value) / 100;
+
+            lblPrincipal.innerText = principal.toLocaleString('en-US');
+            lblMonthly.innerText = monthly.toLocaleString('en-US');
+            lblReturn.innerText = (r * 100).toFixed(1);
+            lblYears.innerText = years;
+            lblLeverage.innerText = (leverageRatio * 100).toFixed(0);
+            lblGross.innerText = (grossRate * 100).toFixed(2);
+            lblTax.innerText = (taxRate * 100).toFixed(0);
+
+            // 2. 核心数学计算
+            // 实际借贷利率 (抵税后)
+            const netBorrowRate = grossRate * (1 - taxRate);
+            resNetRate.innerText = (netBorrowRate * 100).toFixed(2) + '%';
+
+            // 月复利率
+            const monthlyR = Math.pow(1 + r, 1 / 12) - 1;
+
+            // 模拟 1：无杠杆复利
+            let standardValue = principal;
+            for (let y = 1; y <= years; y++) {
+                for (let m = 0; m < 12; m++) {
+                    standardValue = (standardValue + monthly) * (1 + monthlyR);
+                }
+            }
+
+            // 模拟 2：Margin 杠杆及利息抵税
+            let leveragedOwnCash = principal; 
+            let cumulativeTaxSaved = 0;
+
+            for (let y = 1; y <= years; y++) {
+                // 每年初，确定当年的债务额度 (自有资金 * 杠杆比)
+                const debtThisYear = leveragedOwnCash * leverageRatio;
+                let totalInvestedAsset = leveragedOwnCash + debtThisYear;
+
+                // 这一年内的复利增值
+                for (let m = 0; m < 12; m++) {
+                    totalInvestedAsset = (totalInvestedAsset + monthly) * (1 + monthlyR);
+                }
+
+                // 算账：今年产生的利息及省税
+                const interestPaid = debtThisYear * grossRate;
+                const taxSaved = interestPaid * taxRate;
+                const netInterestCost = interestPaid - taxSaved;
+
+                cumulativeTaxSaved += taxSaved;
+
+                // 年末净资产 = 总资产 - 归还债务本金 - 实际净利息支出
+                leveragedOwnCash = totalInvestedAsset - debtThisYear - netInterestCost;
+                
+                // 极极端情况下的破产线保底（净资产不为负）
+                if (leveragedOwnCash < 0) leveragedOwnCash = 0;
+            }
+
+            // 3. 渲染结果到页面上
+            resStandard.innerText = formatMoney(standardValue);
+            resLeveraged.innerText = formatMoney(leveragedOwnCash);
+            resTaxSaved.innerText = formatMoney(cumulativeTaxSaved);
+        }
+
+        // 监听所有滑块变动事件
+        [elPrincipal, elMonthly, elReturn, elYears, elLeverage, elGross, elTax].forEach(el => {
+            el.addEventListener('input', recalculate);
+        });
+
+        // 首次加载初始化计算
+        recalculate();
+    </script>
 </body>
 </html>
